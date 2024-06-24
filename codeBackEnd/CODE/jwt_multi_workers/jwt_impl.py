@@ -24,7 +24,7 @@ class JWT_IMP:
         self.keys = Keys(self.Redis)# the keypair instance
         self.SubPubManager = Sub_Pub_manager(self)
 
-    def __sunc_keys(self):
+    def sync_keys(self):
         """
         this function will check if the key pair are still None
         if so that means that we didn't yet generated any keys for
@@ -37,7 +37,9 @@ class JWT_IMP:
         """
         # check redis for keys
         key_pair_dicts = self.keys.get_pair()
-        if key_pair_dicts is not None:
+        if key_pair_dicts is not None and\
+             key_pair_dicts["private_key"] is not None and \
+                key_pair_dicts["public_key"] is not None:
             # keys already in redis
             # we need to update the attributes of
             # our keys 
@@ -51,7 +53,13 @@ class JWT_IMP:
         new_pair = self.keys.generate_new_pairs()
         # update the redis
         # meaning we triggered a new event
-        self.keys.set_pair_into_redis(
+        self.SubPubManager.update_and_publish(
+            new_pair["public_key"], 
+            new_pair["private_key"]
+        )
+    def refresh_keys(self):
+        new_pair = self.keys.generate_new_pairs()
+        self.SubPubManager.update_and_publish(
             new_pair["public_key"], 
             new_pair["private_key"]
         )
