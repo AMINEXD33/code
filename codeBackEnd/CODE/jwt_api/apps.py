@@ -8,4 +8,6 @@ class JwtApiConfig(AppConfig):
         print("initialized")
         from jwt_multi_workers.jwt_impl import JWT_IMP
         self.my_object = JWT_IMP()
+        """A very importent step"""
+        self.my_object.sync_keys()
     
