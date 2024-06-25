@@ -192,13 +192,13 @@ class Token_manager:
     def is_cached(self, username: str, password: str):
         """
         this function checks if a token is cached or not
-        Return: true or false
+        Return: the token  or false
         """
         cached = self.jwt_impl.Redis.hget(
             Token_manager.__CACHING_LIST_NAME, username + password
         )
         if cached:
-            return True
+            return cached
         else:
             return False
 

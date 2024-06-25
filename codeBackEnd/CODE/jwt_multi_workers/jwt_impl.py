@@ -62,7 +62,9 @@ class JWT_IMP:
         )
 
     def refresh_keys(self):
-
+        """
+            this function refresh the keys
+        """
         # keys are not in redis
         # generate new pair
         new_pair = self.keys.generate_new_pairs()
@@ -72,13 +74,13 @@ class JWT_IMP:
         self.SubPubManager.update_and_publish(
             new_pair["private_key"], new_pair["public_key"]
         )
-        print("keys changed")
 
     def make_token(self, **claims):
         """
         this function takes a dict (claims) that containes all your data
         and for safty , a random and useless uuid will be inluded to make sure that the
         token is unique
+        Return: encrypted token (string)
         """
         useless = str(uuid.uuid4())
         claims["useless"] = useless
@@ -102,12 +104,19 @@ class JWT_IMP:
         return encrypted_token
 
     def decr_token(self, encrypted_token):
-        # Decrypt the JWT
-        jwetoken = jwe.JWE()
-        jwetoken.deserialize(encrypted_token, key=self.keys.private_key)
-        signed_token_decrypted = jwetoken.payload.decode("utf-8")
+        """
+        this function takes an encrypted token and decrypt it 
+        Return: decrypted token ot None if an error accured,
+        """
+        try:
+            # Decrypt the JWT
+            jwetoken = jwe.JWE()
+            jwetoken.deserialize(encrypted_token, key=self.keys.private_key)
+            signed_token_decrypted = jwetoken.payload.decode("utf-8")
 
-        # Verify the signed JWT
-        token = jwt.JWT(key=self.keys.public_key, jwt=signed_token_decrypted)
-        # print("Decrypted and Verified Claims:", token.claims)
-        return token
+            # Verify the signed JWT
+            token = jwt.JWT(key=self.keys.public_key, jwt=signed_token_decrypted)
+            # print("Decrypted and Verified Claims:", token.claims)
+            return token
+        except:
+            return None
