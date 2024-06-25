@@ -5,9 +5,7 @@ from datetime import timedelta
 class Token_manager:
 
     __CALLS_TO_CHANGE_KEYS = 5  #
-    __CALLS_COUNTER_NAME = (
-        "count_calls"  # the name of the key holding the calls numbers in redis
-    )
+
     __CALLS = 0
     __EXPIRED_AFTER = 1  # days
     __USE_CACHING = True  # cache the tokens
@@ -33,7 +31,7 @@ class Token_manager:
         # calculate expiration data
         current_date = datetime.datetime.now()
         expiration_date = current_date + timedelta(days=Token_manager.__EXPIRED_AFTER)
-        expiration_date = expiration_date.strftime("%Y/%M/%D %H:%m:%S")
+        expiration_date = expiration_date.strftime("%Y/%m/%d %H:%M:%S")
 
         # TO DO , add if the user is admin
 
@@ -240,3 +238,36 @@ class Token_manager:
             print("safe reload done")
         except Exception as e:
             print("safe reload error", e)
+
+    """abstraction to validate the token"""
+    def abstract_token_validation(self, username:str, password:str, token:str, expiration_date:str):
+        """
+        this function validate if a token is a valid one or not, it will check if it's black listed,
+        if not it will check the expiration date, and cach the token if the __USE_CACHING is true
+        Return: if the token is valid (True), if not (False)
+        """
+        # check if token is black listed
+        if self.is_black_listed(token):
+            print("token found in black list")
+            return (False)
+        # check if the token is valid
+        current_datetime = datetime.datetime.now()
+        expiration_date_parsed = datetime.datetime.strptime(expiration_date, "%Y/%m/%d %H:%M:%S")
+        if current_datetime >= expiration_date_parsed:
+            # add to black list
+            self.add_to_blacklist(token)
+            print("black listing token")
+            # token expired
+            return (False)
+        # if no caching allowed then return true, sinse the token is valid
+        if not Token_manager.__USE_CACHING:
+            return (True)
+        # cach token
+        self.cash_token(username, password, token)
+        print("cached token")
+        return (True)
+
+
+        
+        
+        
