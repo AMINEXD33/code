@@ -43,7 +43,7 @@ class Token_manager:
         """
         # calculate expiration data
         current_date = datetime.datetime.now()
-        expiration_date = current_date + timedelta(minutes=Token_manager.__EXPIRED_AFTER)### REFACTOR TO DAYS !!!!
+        expiration_date = current_date + timedelta(days=Token_manager.__EXPIRED_AFTER)### REFACTOR TO DAYS !!!!
         expiration_date = expiration_date.strftime("%Y/%m/%d %H:%M:%S")
 
         # TO DO , add if the user is admin
@@ -257,7 +257,7 @@ class Token_manager:
             print("safe reload error", e)
 
     """abstraction to validate the token"""
-    def abstract_token_validation(self, username:str, password:str, token:str):
+    def abstract_token_validation(self, token:str):
         """
         this function will validate the giving token , by checking the blacklist
         and then try and decrypt it, and finally checking the expiration date
@@ -284,7 +284,7 @@ class Token_manager:
             print("this is the black listed value", self.to_sha_256(token))
             return False
         
-        return True
+        return dec_tok
         
     def abstract_token_validation_get_reqs(self, username:str, password:str):
         """
