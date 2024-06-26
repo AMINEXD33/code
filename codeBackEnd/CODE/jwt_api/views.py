@@ -12,7 +12,26 @@ reference = apps.get_app_config("jwt_api").my_object
 @require_http_methods(["GET"])
 @csrf_exempt
 def get_keys(request):
-    tooken, expdate = reference.TokenManager.make_configured_token("amine", "meftah", {"username":"meftah"})
+    data = None
+    try:
+        # get the username and password from the user
+        data = json.loads(request.body.decode('utf-8'))
+    except:
+        return JsonResponse({'error':"data is not sent properly"})
+    username=data["username"]
+    password=data["password"]
+    # validate if the username and password are valid
+    #.........
+    # let's check if the token is cashed  
+    cached_token, expiration_date = reference.TokenManager.abstract_token_validation_get_reqs(username, password)
+    if cached_token:
+        return JsonResponse({"JWT":cached_token, "expired_date":expiration_date})
+    # not cached then make a new one
+    tooken, expdate = reference.TokenManager.make_configured_token(username, password, {"username":"meftah"})
+    print("making a new one")
+    # we can cach the token here 
+    reference.TokenManager.cash_token(username, password, tooken)
+    # print("caching the new one")
     return JsonResponse({"JWT":tooken, "expired_date":expdate})
 
 @require_http_methods(["POST"])
@@ -25,7 +44,7 @@ def get_dec(request):
     # try and get the token and the username and password
     try:
         obj_token = json.loads(json_token)
-        print(obj_token)
+        # print(obj_token)
     except Exception as e:
         print(e)
         return JsonResponse({"error parsing token":True})
@@ -39,14 +58,10 @@ def get_dec(request):
 
     if not body["username"] or not body["password"]:
          return JsonResponse({"autherror":False})
-    reference.TokenManager.abstract_token_validation(body["username"], body["password"], obj_token["JWT"], obj_token["expired_date"])
-    # print(token)
-    # try:
-    #     token = token.replace("\\", "")
-    #     decrepted = reference.decr_token(token)
-    #     print("recieved", decrepted)
-    #     return JsonResponse({"ok":decrepted.claims})
-    # except Exception as e:
-    #     print(e)
-    #     return JsonResponse({"ok":False})
-    return JsonResponse({"ok":False})
+    if not reference.TokenManager.abstract_token_validation(
+        body["username"], 
+        body["password"],
+        obj_token["JWT"]):
+        return JsonResponse({"unauthorized":"True"})
+
+    return JsonResponse({"ok":True})

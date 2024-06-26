@@ -35,23 +35,22 @@ class Sub_Pub_manager:
 
         def helper_extract_two_keys(new_key_pair_json_message):
             keys_dict = json.loads(new_key_pair_json_message["data"])
-            print("data+++++>>>>> ", keys_dict)
+            # print("data+++++>>>>> ", keys_dict)
             return keys_dict
 
         flag_listiner = self.redis_instance.pubsub(ignore_subscribe_messages=True)
         flag_listiner.subscribe(Sub_Pub_manager.__FLAG_CHANNEL)
         # the flag is the new flag
         for new_key_pair_json_message in flag_listiner.listen():
-            print("the redis even got triggered !")
+            # print("the redis even got triggered !")
             extracted_keys = helper_extract_two_keys(new_key_pair_json_message)
             private_key = extracted_keys["private_key"]
             public_key = extracted_keys["public_key"]
-            print("from subpub public", type(public_key))
-            print("from subpub private", type(private_key))
+
 
             print(private_key == public_key)
             self.JWT_instance.keys.from_json(private_key, public_key)
-            print("loaded from chanell")
+            # print("loaded from chanell")
 
     def update_and_publish(self, private_key: object, public_key: object):
         """
@@ -60,10 +59,10 @@ class Sub_Pub_manager:
         """
         # publish the new pairs
         ### CONTINUE
-        print("WEIIIIRD ", type(private_key), type(public_key))
+        # print("WEIIIIRD ", type(private_key), type(public_key))
         private_key_json = private_key.export()  # this is a json
         public_key_json = public_key.export_public()  # this is a json
-        print("update_and_pub, ", private_key == public_key)
+        # print("update_and_pub, ", private_key == public_key)
         # Combine keys into a single JSON object
         key_pair = {
             "private_key": json.loads(private_key_json),
@@ -75,7 +74,7 @@ class Sub_Pub_manager:
         self.redis_instance.publish(
             Sub_Pub_manager.__FLAG_CHANNEL, new_key_pair_json_message
         )
-        print("new pair published")
+        # print("new pair published")
         # update redis
         self.JWT_instance.keys.set_pair_into_redis(public_key, private_key)
 

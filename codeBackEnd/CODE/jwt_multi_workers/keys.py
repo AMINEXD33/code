@@ -85,7 +85,7 @@ class Keys:
                 self.redis_instance.set(Keys.__PUB_KEY_REFERENCE, public_key_exported)
                 # execute the transaction
                 pip.execute()
-                print("redis are updated !")
+                # print("redis are updated !")
             except redis.exceptions.RedisError as e:
                 print(f"error while updating keys: {e}")
             finally:
@@ -131,10 +131,4 @@ class Keys:
         # load both keys
         self.private_key = jwk.JWK(**private_key)
         self.public_key = jwk.JWK(**public_key)
-
-        print("from_json public:", self.public_key)
-        print("from_json private:", self.private_key)
-
-        print("from_json public:", type(self.public_key))
-        print("from_json private:", type(self.private_key))
-        print("pair loaded from json !")
+        # print("pair loaded from json !")
