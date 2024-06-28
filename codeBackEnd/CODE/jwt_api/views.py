@@ -57,12 +57,14 @@ def get_keys(request):
 
 
 
-@require_http_methods(["GET"])
+@require_http_methods(["POST"])
 @csrf_exempt
 def login(request):
     """"
     this view signs in  a client
     """
+    import time
+    time.sleep(3)
     unauthorized = HttpResponseForbidden({"error":"authentication failed !"}) 
     data = get_body_from_request(request)
     if not data:
@@ -73,6 +75,7 @@ def login(request):
     password = data["password"]
     if not username or not password:
         return unauthorized
+    print("log", username, password)
     # let's check if the token is cashed
     # well we're using the hashed password and username to
     # check for caching , so that's pretty safe, giving the only
@@ -112,6 +115,7 @@ def login(request):
         "role":potential_user.role_ref.role_name
         })
     reference.TokenManager.cash_token(username, hashed_user_pass, tooken)
+    print(tooken)
     return JsonResponse({"JWT":tooken, "expired_date":expdate})
 
 

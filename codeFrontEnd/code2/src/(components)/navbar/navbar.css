@@ -1,6 +1,6 @@
 .navbar{
     width: 100%;
-    min-height: 70px;
+    min-height: 120px;
     display: flex;
     flex-wrap: wrap;
     background-color: var(--divs_colors);

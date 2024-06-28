@@ -8,7 +8,13 @@ import "./input.css";
 
 
 
-export default function Input({ name, type, placeholder, id = "" }) {
+export default function Input({ 
+    name, 
+    type, 
+    placeholder, 
+    id = "" ,
+    onChange
+}) {
     let inpt = useRef(null);
     let inpt2 = useRef(null);
     let inpt3 = useRef(null);
@@ -46,7 +52,9 @@ export default function Input({ name, type, placeholder, id = "" }) {
                     type={type}
                     placeholder={placeholder}
                     onFocus={focusit}
-                    ref={inpt2} />
+                    ref={inpt2}
+                    onChange={(e)=>{onChange(e.target.value)}}
+                    />
             </div>
         </>
     )

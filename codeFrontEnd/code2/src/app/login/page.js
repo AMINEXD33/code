@@ -7,29 +7,23 @@ import Input from "@/(components)/linux_inputs/input";
 import BtnLoad from "@/(components)/button_loading/btnload";
 import { resolve } from "styled-jsx/css";
 import Link from "next/link";
+import { login } from "./api_funcs";
 function Login() {
     let logCallStatus = useRef(false);
-
-    function handleLogin()
+    let username= useRef("");
+    let password = useRef("");
+    function setUsername(text)
     {
-        return new Promise((resolve, reject)=>{
-            fetch("www.google.com")
-            .then(data=> resolve(data))
-            .catch(error=> reject(error))
-        })
+        username.current = text;
     }
-
-    function handleResponse(response, error)
+    // two functions to set the passwords from the value stream of the inputs
+    function setPassword(text)
     {
-        console.log("got response")
-        console.log("rs", response);
-        console.log("err", error);
-        if (response != undefined){
-            console.log("rs", response);
-        }
-        else if (error != undefined){
-            console.log("err", error);
-        }
+        password.current = text
+    }
+    function handleResponse()
+    {
+        return (login(username.current, password.current));
     }
 
 
@@ -50,12 +44,14 @@ function Login() {
                                 type={"text"} 
                                 placeholder={"username"}
                                 id={"login_user"}
+                                onChange={setUsername}
                             />
                             <Input 
                                 name={"password"} 
                                 type={"password"} 
                                 placeholder={"password"}
                                 id={"login_pass"}
+                                onChange={setPassword}
                             />
                             <BtnLoad
                             height={50}
@@ -63,13 +59,13 @@ function Login() {
                             radius={10}
                             content={"login"}
                             useStateVar={logCallStatus}
-                            callBack = {handleLogin}
-                            handleResponse = {handleResponse}
-                            args={["amine","aminemeftah"]}
+                            callBack = {handleResponse}
+                            args={[username.current,password.current]}
                             />
                         </div>
                         <div className="no_account">
-                            <p>don't have an account , create one <Link href={"/"}prefetch={true}>here</Link></p>
+                            <p>{"don't have an account create one"}</p>
+                            <Link href={"/"}prefetch={true}>here</Link>
                         </div>
                     </div>
                 </div>

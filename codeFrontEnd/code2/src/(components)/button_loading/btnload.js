@@ -29,21 +29,14 @@ export default function BtnLoad({
         // set the button as inactive  while the execution of the 
         // callBack isn't done, when done reset the state of the button
         set_btn_state(true);
-        if (typeof handleResponse ===  "function")
-        {
-            let data_ = null;
-            let error_ = null;
-            let response = await callBack(...args)
-            .then(data=>{data_ = data})
-            .catch(error=>{error_ = error})
-            handleResponse(data_, error_);
-        }
-        else{
-            await callBack(...args);
-        }
-        set_btn_state(false);
+        let ss = await callBack(...args)
+        .then()
+        .catch(error=>{console.log(error)})
+        .finally(()=>{
+            set_btn_state(false)
+            lock.current = false;
+        })
         // release lock
-        lock.current = false;
     }
     useEffect(()=>{
         if (btn_state === true && loading_dots.current && text_.current && buttun.current)

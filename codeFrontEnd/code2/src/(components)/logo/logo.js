@@ -5,20 +5,17 @@ import { useEffect, useCallback, useState, useRef } from "react";
 
 
 
-export default function Logo({glowing=false})
+export default function Logo({glowing=false, id=""})
 {
     let logo = useRef(null);
     useEffect(()=>{
-        console.log(glowing)
         if (glowing && logo.current){
             logo.current.classList.add("glow");
         }
-    }, [])
-
-
+    },)
     return (
         <>
-            <div className="logo" ref={logo}>
+            <div className="logo" ref={logo} id={id}>
                 <div className="letter">C</div>
                 <div className="letter">O</div>
                 <div className="letter">D</div>

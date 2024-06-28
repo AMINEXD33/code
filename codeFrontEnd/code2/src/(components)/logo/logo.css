@@ -36,6 +36,6 @@
         text-shadow: 0px 0px 0px var(--logo-active);
     }  
     to{
-        text-shadow: 0px 2px 2px var(--logo-active);
+        text-shadow: 4px 2px 2px var(--logo-active);
     }
 }

@@ -1,6 +1,6 @@
 "use client";
 import "./navbar.css";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import moon from "../../../public/dark_mode_moon.svg";
 import sun from "../../../public/light_mode_sun.svg";
 import dynamic from 'next/dynamic';
@@ -14,13 +14,16 @@ import dynamic from 'next/dynamic';
  * @returns 
  */
 function Navbar({activeLink}){
-    const [active1, setActive1] = useState("");
-    const [active2, setActive2] = useState("");
-    const [active3, setActive3] = useState("");
+    const active1 = useRef("");
+    const active2 = useRef("");
+    const active3 = useRef("");
     const [menue_state, setMenueState] = useState(false)
-    const [theme, setTheme] = useState("light");
-    const [themeicon, setThemeIcon] = useState(sun);
+    const [theme, setTheme] = useState(["light", sun]);
+
+
+    
     // functions to controll if the navbar in view or not
+    console.log("rendered");
     function set_nav_out(nvbar_address)
     {
         nvbar_address.classList.remove("down");
@@ -32,9 +35,9 @@ function Navbar({activeLink}){
         nvbar_address.classList.add("down");
     }
     useEffect(()=>{
-        if (activeLink == 1){setActive1("active");}
-        else if (activeLink == 2){setActive2("active");}
-        else if (activeLink == 3){setActive3("active");}
+        if (activeLink == 1){active1.current = "active";}
+        else if (activeLink == 2){active2.current = "active";}
+        else if (activeLink == 3){active3.current = "active";}
 
         // set the listiner for scrolling up and down
         let nvbar = document.getElementById("nvbar");
@@ -49,22 +52,20 @@ function Navbar({activeLink}){
         return () => {
             document.removeEventListener("scroll", handleScroll);
         };
-    }, [])
+    }, [activeLink])
     // theme controller
     function toggle_theme(){
-        if(theme==="light"){setTheme("dark")}
-        else{setTheme("light")}
+        if(theme[0]==="light"){setTheme(["dark", moon])}
+        else{setTheme(["light", sun])}
     }
     useEffect(()=>{
         let body = document.getElementById('bod');
-        if(theme === "light"){
+        if(theme[0] === "light"){
             body.classList.remove("darkmode");
             localStorage.setItem("theme", "light");
-            setThemeIcon(sun);
         }
         else{
             body.classList.add("darkmode")
-            setThemeIcon(moon);
             localStorage.setItem("theme", "dark");
         }
     }, [theme])
@@ -93,25 +94,25 @@ function Navbar({activeLink}){
         <>
             <div className="navbar" id="nvbar">
                 <div className="logo">
-                    <Logo glowing={false}/>
+                    <Logo glowing={false} id={"logo_"}/>
                 </div>
                 <div className="link_list retract" id="menue_target">
                     <ul>
                         <li>
-                            <Link href="/login" prefetch={false} className={active1}>home</Link>
+                            <Link href="/login" prefetch={false} className={active1.current}>home</Link>
                         </li>
                         <li>
-                            <Link  href="/" prefetch={false}  className={active2}>login</Link>
+                            <Link  href="/" prefetch={false}  className={active2.current}>login</Link>
                         </li>
                         <li>
-                            <Link  href="/" prefetch={false}  className={active3} content="signin" >signin</Link>
+                            <Link  href="/" prefetch={false}  className={active3.current} content="signin" >signin</Link>
                         </li>
 
                     </ul>
                 </div>
                 <div className="toggler">
                     <Image
-                        src={themeicon}
+                        src={theme[1]}
                         alt="things"
                         width={30}
                         height={30}
@@ -119,7 +120,7 @@ function Navbar({activeLink}){
                         onClick={toggle_theme}
                     />
                 </div>
-                <div className="menue" onClick={trigger_menue}>
+                    <div className="menue" onClick={trigger_menue}>
                 </div>
             </div>
 
