@@ -1,0 +1,52 @@
+@font-face {
+    font-family: chakra;
+    src: url("../../../public/Chakra_Petch/ChakraPetch-Medium.ttf");
+}
+.container{
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.login_panel{
+    height: 500px;
+    width: 800px;
+    background-color: var(--divs_colors);
+    box-shadow: var(--div-box-shadow);
+    border-radius: 10px;
+    display: flex;
+   flex-direction: column;
+    align-items: center;
+    font-family: chakra;
+    font-size: larger;
+    gap: 50px;
+}
+#login_user, #login_pass{
+    width: 50%;
+}
+.logininputs{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+.no_account{
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    flex-wrap: wrap;
+}
+.no_account>p{
+    height: fit-content;
+    
+}
+.no_account *{
+    font-size: smaller;
+    font-weight: lighter;
+}
+.no_account>p>a{
+    text-decoration: underline;
+}

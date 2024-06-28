@@ -2,7 +2,7 @@
 import "./navbar.css";
 import { useEffect, useRef, useState } from "react";
 import moon from "../../../public/dark_mode_moon.svg";
-import sun from "../../../public/light_mode_sun.svg"
+import sun from "../../../public/light_mode_sun.svg";
 import dynamic from 'next/dynamic';
 /**
  * 
@@ -20,10 +20,35 @@ function Navbar({activeLink}){
     const [menue_state, setMenueState] = useState(false)
     const [theme, setTheme] = useState("light");
     const [themeicon, setThemeIcon] = useState(sun);
+    // functions to controll if the navbar in view or not
+    function set_nav_out(nvbar_address)
+    {
+        nvbar_address.classList.remove("down");
+        nvbar_address.classList.add("up");
+    }
+    function set_nav_in(nvbar_address)
+    {
+        nvbar_address.classList.remove("up");
+        nvbar_address.classList.add("down");
+    }
     useEffect(()=>{
         if (activeLink == 1){setActive1("active");}
         else if (activeLink == 2){setActive2("active");}
         else if (activeLink == 3){setActive3("active");}
+
+        // set the listiner for scrolling up and down
+        let nvbar = document.getElementById("nvbar");
+        let last_top_scrool = 0;
+        let handleScroll = document.addEventListener("scroll", ()=>{
+            let this_scroll = document.documentElement.scrollTop;
+            if (last_top_scrool > this_scroll){set_nav_out(nvbar);}
+            else if (last_top_scrool < this_scroll){set_nav_in(nvbar);}   
+            last_top_scrool = this_scroll;
+        })
+
+        return () => {
+            document.removeEventListener("scroll", handleScroll);
+        };
     }, [])
     // theme controller
     function toggle_theme(){
@@ -34,11 +59,13 @@ function Navbar({activeLink}){
         let body = document.getElementById('bod');
         if(theme === "light"){
             body.classList.remove("darkmode");
+            localStorage.setItem("theme", "light");
             setThemeIcon(sun);
         }
         else{
             body.classList.add("darkmode")
             setThemeIcon(moon);
+            localStorage.setItem("theme", "dark");
         }
     }, [theme])
 
@@ -59,12 +86,15 @@ function Navbar({activeLink}){
     }, [menue_state])
 
     // dynamically importing some components
-    const  Link  = dynamic(()=>import("next/link"), {suspense:true})
-    const  Image = dynamic(()=>import("next/image"), {suspense:true})
+    const  Link  = dynamic(()=>import("next/link"), {suspense:false})
+    const  Image = dynamic(()=>import("next/image"), {suspense:false})
+    const  Logo  = dynamic(()=>import("@/(components)/logo/logo", {suspense:false}))
     return (
         <>
-            <div className="navbar">
-                <div className="logo"></div>
+            <div className="navbar" id="nvbar">
+                <div className="logo">
+                    <Logo glowing={false}/>
+                </div>
                 <div className="link_list retract" id="menue_target">
                     <ul>
                         <li>

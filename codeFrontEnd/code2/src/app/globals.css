@@ -3,34 +3,46 @@
   src: url(../../public/Ubuntu/Ubuntu-Bold.ttf);
 }
 
+
 body {
   --background_color : rgb(255, 255, 255);
   --color : rgb(0, 0, 0);
   --glow: 10px 10px 10px 10px rgb(0, 0, 0);
-  --background: #ADA996;  /* fallback for old browsers */
-  --background: -webkit-linear-gradient(to right, #EAEAEA, #DBDBDB, #F2F2F2, #ADA996);  /* Chrome 10-25, Safari 5.1-6 */
-  --background: linear-gradient(to right, #EAEAEA, #DBDBDB, #F2F2F2, #ADA996); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  --background: #ffffff;  /* fallback for old browsers */
+  --background: -webkit-linear-gradient(0deg, #ffffff 0%, #e1e1e1 100%);  /* Chrome 10-25, Safari 5.1-6 */
+  --background: linear-gradient(90deg, #ffffff 0%, #e1e1e1 100%); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   --divs_colors: rgb(238, 238, 238);
-  --link-active: #002d61;
+  --link-active: #0000008c;
   --hovered_links: black;
   --small-dev-link-color: #F2F2F2;
   --small-dev-link-color-active: rgba(180, 180, 180, 0.678);
+  --div-box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.219);
+  --logo-active: rgba(0, 0, 0, 0.534);
+  --inputs-background: rgba(0, 0, 0, 0.507);
+  --btn-onload : rgb(218, 218, 218);
+  
+}
+*{
+  /* border: 1px solid yellow; */
 }
 
 .darkmode{
     --background_color : rgb(0, 0, 0);
     --color : rgb(255, 255, 255);
     --glow: 10px 10px 10px 10px rgb(255, 255, 255);
-    --background: #000000; /* fallback for old browsers */
-    --background: -webkit-linear-gradient(to right, #000000, #434343); /* Chrome 10-25, Safari 5.1-6 */
-    --background: linear-gradient(to right, #000000, #434343); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    --background: #171717;/* fallback for old browsers */
+    --background: -webkit-linear-gradient(0deg, #171717 0%, #000000 100%); /* Chrome 10-25, Safari 5.1-6 */
+    --background: linear-gradient(90deg, #171717 0%, #000000 100%);/* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     --divs_colors: rgb(19, 19, 19);
-    --link-active: #00b9da;
+    --link-active: #91919188;
     --small-dev-link-color: #000000;
     --hovered_links: rgb(247, 247, 247);
     --small-dev-link-color-active: rgba(180, 180, 180, 0.24);
+    --div-box-shadow: 2px  5px 10px rgba(255, 255, 255, 0.199);
+    --logo-active: rgba(255, 255, 255, 0.418);
+    --inputs-background: rgba(255, 255, 255, 0.5);
+    --btn-onload : rgb(43, 43, 43);
 }
-
 
 * {
   box-sizing: border-box;

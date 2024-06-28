@@ -1,0 +1,64 @@
+.linux_input{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: var(--color);
+    position: relative;
+
+}
+.linux_input>input{
+    border: 0px;
+    outline: 0px;
+    background-color: transparent;
+    height: 50px;
+    width: 100%;
+    color: var(--color);
+}
+.focused_input::after{
+    content: "";
+    width: 100%;
+    height: 2px;
+    background-color: var(--inputs-background);
+    position: absolute;
+    bottom: 0;
+    animation: apear 0.3s alternate forwards ease-in-out;
+}
+.unfocus_input::after{
+    content: "";
+    width: 100%;
+    height: 2px;
+    background-color: var(--inputs-background);
+    position: absolute;
+    bottom: 0;
+    animation: apear2 0.3s alternate forwards ease-in-out;
+}
+.info{
+    display: flex;
+    flex-wrap: nowrap;
+    width: 40%;
+}
+
+@keyframes apear {
+    from{
+        opacity: 0;
+        width: 80%;
+        scale: 1;
+    }
+    to{
+        opacity: 1;
+        width: 100%;
+        scale: 1.04;
+    }
+}
+@keyframes apear2{
+    from{
+        opacity: 1;
+        width: 100%;
+        scale: 1.04;
+    }
+    to{
+        opacity: 0;
+        width: 80%;
+        scale: 1;
+    }
+}
