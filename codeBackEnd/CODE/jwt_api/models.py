@@ -1,6 +1,13 @@
 from django.db import models
 from django.db import transaction
 import bcrypt, uuid
+from hashlib import sha384
+import random, os
+import datetime
+from datetime import timedelta
+from django.utils import timezone
+from jwt_api.utils.refresh_tokens import Refresh_tokens_manager
+
 class Role(models.Model):
     role_id = models.BigAutoField(primary_key=True)
     role_name = models.CharField(max_length=50, null=False)
@@ -142,7 +149,6 @@ class Session(models.Model):
             print("error while executing transaction", e)
             return None
             
-
 class Session_correction_pool(models.Model):
     session_correction_pool_id = models.BigAutoField(primary_key=True)
     correction = models.TextField(null=True)
@@ -208,3 +214,47 @@ class Users_stats(models.Model):
             ---------------------------------------------------
             """
         )
+
+class Users_devices(models.Model):
+    id_users_device = models.BigAutoField(primary_key=True)
+    device = models.TextField(null= False)
+    device_ip_address = models.CharField(null=False, max_length=120, unique=True)
+    user_ref = models.ForeignKey(Users, on_delete=models.CASCADE)
+    is_pc = models.BooleanField(default=False)
+    is_phone = models.BooleanField(default=False)
+    def __repr__(self):
+        f"""
+                    USERS DEVICES
+        --------------------------------------------
+        id_users_device = {self.id_Users_device}
+        device = {self.device}
+        device_ip_address = {self.device_ip_address}
+        user_ref = {self.user_ref}
+        """
+
+class Refresh_tokens(models.Model):
+    id_refresh_token = models.BigAutoField(primary_key=True)
+    user_id_ref = models.ForeignKey(Users, on_delete=models.CASCADE)
+    refresh_token = models.CharField(max_length=150, null= False)
+    expires_at = models.DateTimeField(null=False)
+
+    def __repr__(self):
+        f"""
+                    REFRESH_TOKENS
+        -----------------------------------------
+        id_refresh_token = {self.id_refresh_token}
+        refresh_token = {self.refresh_from_db}
+        expires_at = {self.expires_at}
+        """
+    def create2(user_ref_id:str, token:str, exp_date:str):
+        try:
+            # see if there was an other old token
+            obj = Refresh_tokens(
+            refresh_token=token,
+            user_id_ref= user_ref_id,
+            expires_at= exp_date
+            ).save()
+            return obj
+        except Exception as e:
+            print("error creating refresh token  ", e)
+        return False

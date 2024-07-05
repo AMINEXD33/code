@@ -8,7 +8,7 @@ class Token_manager:
     __CALLS_TO_CHANGE_KEYS = 10000  #
 
     __CALLS = 0
-    __EXPIRED_AFTER = 1  # days
+    __EXPIRED_AFTER = 1  # min
     __USE_CACHING = True  # cache the tokens
     __BLACK_LIST_NAME = "bllist"  # the name of the black hash set in redis
     __CACHING_LIST_NAME = "tkcach"  # the name of the caching hash set in redis
@@ -43,8 +43,8 @@ class Token_manager:
         """
         # calculate expiration data
         current_date = datetime.datetime.now()
-        expiration_date = current_date + timedelta(days=Token_manager.__EXPIRED_AFTER)### REFACTOR TO DAYS !!!!
-        expiration_date = expiration_date.strftime("%Y/%m/%d %H:%M:%S")
+        expiration_date = current_date + timedelta(minutes=Token_manager.__EXPIRED_AFTER)### REFACTOR TO DAYS !!!!
+        expiration_date = expiration_date.strftime("%Y-%m-%d %H:%M:%S")
 
         # TO DO , add if the user is admin
 
@@ -168,16 +168,19 @@ class Token_manager:
 
     """caching methods"""
 
-    def cash_token(self, username: str, password: str, token: str):
+    def cash_token(self, username: str, password: str, data: dict):
         """
-        this function cahches a token in a locked transaction
+        this function cahches some dict in a locked transaction
         """
+        jsonify_dict = json.dumps(data)
         with self.jwt_impl.Redis.pipeline() as pip:
             try:
                 self.acquire_lock(2)
                 pip.multi()
                 self.jwt_impl.Redis.hset(
-                    Token_manager.__CACHING_LIST_NAME, username + password, token
+                    Token_manager.__CACHING_LIST_NAME,
+                    username + password, 
+                    jsonify_dict
                 )
                 pip.execute()
                 print("cached successfully")
@@ -207,14 +210,17 @@ class Token_manager:
     def is_cached(self, username: str, password: str):
         """
         this function checks if a token is cached or not
-        Return: the token  or false
+        Return: a dict or false
         """
         cached = self.jwt_impl.Redis.hget(
             Token_manager.__CACHING_LIST_NAME, username + password
         )
-        if cached:
-            return cached
-        else:
+        try:
+            if cached:
+                return json.loads(cached)
+            else:
+                return False
+        except:
             return False
 
     def reset_cach(self):
@@ -294,7 +300,10 @@ class Token_manager:
         return: if valid (token, expired_date)  , if not valid (False, None)
         """
         # check if the token is cached
-        cached = self.is_cached(username, password)
+        data = self.is_cached(username, password)
+        if data == False:
+            return(False, None)
+        cached = data.get("JWT")
         if not cached:
             # not cached
             return (False, None)
@@ -312,13 +321,15 @@ class Token_manager:
         expiration_date = dec_tok["expiration_date"]
         # is the token valid
         current_datetime = datetime.datetime.now()
-        expiration_date_parsed = datetime.datetime.strptime(expiration_date, "%Y/%m/%d %H:%M:%S")
+        expiration_date_parsed = datetime.datetime.strptime(expiration_date, "%Y-%m-%d %H:%M:%S")
         if current_datetime >= expiration_date_parsed:
             print("token from cach is expired")
+            self.uncash_token(username, password)
+            self.remove_from_blacklist(cached)
             return (False, None)
         # the token then must be valid
         # print("from cach")
-        return (cached, expiration_date)
+        return (data, expiration_date)
         
         
         
