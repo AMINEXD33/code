@@ -49,7 +49,7 @@ def get_body_from_request(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def login(request):
-    """ "
+    """"
     this view signs in  a client
     """
     # re-referencing the global var for better performance
