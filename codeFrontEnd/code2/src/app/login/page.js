@@ -33,7 +33,7 @@ function Login() {
         <>
             <Navbar activeLink={2}/>
             <div className="container">
-                <div className="container_md">
+                <div className="container_md centerize">
                     <div className="login_panel">
                         <div className="logo_section">
                             <Logo glowing={true}/>
@@ -54,6 +54,7 @@ function Login() {
                                 onChange={setPassword}
                             />
                             <BtnLoad
+                            id={"logbtn"}
                             height={50}
                             width={200}
                             radius={10}
@@ -64,8 +65,8 @@ function Login() {
                             />
                         </div>
                         <div className="no_account">
-                            <p>{"don't have an account create one"}</p>
-                            <Link href={"/"}prefetch={true}>here</Link>
+                            <p>{"don't have an account create one "}</p>
+                            <Link href={"/"}prefetch={true} id="llk1"> here</Link>
                         </div>
                     </div>
                 </div>

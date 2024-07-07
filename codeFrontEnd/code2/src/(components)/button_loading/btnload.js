@@ -10,7 +10,8 @@ export default function BtnLoad({
     radius,
     callBack,// this is the function passed to handle what ever
     args,//the args that will be passed to the callBack
-    handleResponse// this function is handling the response if the callBack is a fetch
+    handleResponse,// this function is handling the response if the callBack is a fetch
+    id,
 })
 {
     let loading_dots = useRef(null);
@@ -31,7 +32,7 @@ export default function BtnLoad({
         set_btn_state(true);
         let ss = await callBack(...args)
         .then()
-        .catch(error=>{console.log(error)})
+        .catch(error=>{console.log("Can't execute the button function", error)})
         .finally(()=>{
             set_btn_state(false)
             lock.current = false;
@@ -57,7 +58,7 @@ export default function BtnLoad({
     }, [btn_state])
     return (
         <>
-            <div onClick={()=>{executer()}} ref={buttun} className="btnLoad" style={
+            <div id={id} onClick={()=>{executer()}} ref={buttun} className="btnLoad" style={
                 {
                     "height":height+"px",
                     'width':width+"px",

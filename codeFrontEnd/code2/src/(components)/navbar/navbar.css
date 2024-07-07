@@ -12,6 +12,10 @@
     top: 0;
     z-index: 2;
 }
+.placeholder{
+    width: 100%;
+    min-height: 120px;
+}
 .up{
     animation: nav_down 0.3s alternate forwards ease-in-out;
 }
@@ -36,9 +40,6 @@
     }
 }
 
-.active{
-    border-bottom: 2px solid var(--link-active);
-}
 .link_list{
     display: flex;
     flex-wrap: wrap;

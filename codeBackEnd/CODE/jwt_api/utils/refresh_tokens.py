@@ -50,16 +50,34 @@ class Refresh_tokens_manager:
         return token, exp_date.isoformat(), aware_object
     
     @staticmethod
-    def cache_refresh_token(redis_conn_instance, token, exp_date, first_requester_ip):
+    def cache_refresh_token(redis_conn_instance, token, exp_date, devices_array, username, id_, role):
         """
         this function caches a refresh token, with it's values as json
         """
         try:
-            value = {"exp_date":exp_date, "first_requester_ip":first_requester_ip}
+            value = {
+                "exp_date":exp_date,
+                "devices_array": devices_array,
+                "username": username,
+                "id": id_,
+                "role":role
+                }
             redis_conn_instance.set(token, json.dumps(value))
+            print("cached refresh token")
             return True
-        except:
+        except Exception as e:
+            print(e)
             return False
+    @staticmethod
+    def get_refresh_token_from_cach(redis_conn_instance, token):
+        try:
+            data = redis_conn_instance.get(token)
+            if data :
+                return json.loads(data)
+            else:
+                return None
+        except:
+            return None
 
     def acquire_lock(redis_conn_instance, timeout=100, retry=0.05):
         """

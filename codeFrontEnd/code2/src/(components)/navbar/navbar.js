@@ -14,9 +14,6 @@ import dynamic from 'next/dynamic';
  * @returns 
  */
 function Navbar({activeLink}){
-    const active1 = useRef("");
-    const active2 = useRef("");
-    const active3 = useRef("");
     const [menue_state, setMenueState] = useState(false)
     const [theme, setTheme] = useState(["light", sun]);
 
@@ -35,10 +32,6 @@ function Navbar({activeLink}){
         nvbar_address.classList.add("down");
     }
     useEffect(()=>{
-        if (activeLink == 1){active1.current = "active";}
-        else if (activeLink == 2){active2.current = "active";}
-        else if (activeLink == 3){active3.current = "active";}
-
         // set the listiner for scrolling up and down
         let nvbar = document.getElementById("nvbar");
         let last_top_scrool = 0;
@@ -99,13 +92,13 @@ function Navbar({activeLink}){
                 <div className="link_list retract" id="menue_target">
                     <ul>
                         <li>
-                            <Link href="/login" prefetch={false} className={active1.current}>home</Link>
+                            <Link href="/login" prefetch={true}>home</Link>
                         </li>
                         <li>
-                            <Link  href="/" prefetch={false}  className={active2.current}>login</Link>
+                            <Link  href="/login" prefetch={true}>login</Link>
                         </li>
                         <li>
-                            <Link  href="/" prefetch={false}  className={active3.current} content="signin" >signin</Link>
+                            <Link  href="/register" prefetch={true} content="signin" >register</Link>
                         </li>
 
                     </ul>
@@ -123,7 +116,7 @@ function Navbar({activeLink}){
                     <div className="menue" onClick={trigger_menue}>
                 </div>
             </div>
-
+            <div className="placeholder"></div>
             
         </>
     )

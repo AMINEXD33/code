@@ -43,34 +43,7 @@ def get_body_from_request(request):
         return None
 
 
-@require_http_methods(["GET"])
-@csrf_exempt
-def get_keys(request):
-    data = None
-    try:
-        # get the username and password from the user
-        data = json.loads(request.body.decode("utf-8"))
-    except:
-        return JsonResponse({"error": "data is not sent properly"})
-    username = data["username"]
-    password = data["password"]
-    # validate if the username and password are valid
-    # .........
-    # let's check if the token is cashed
-    cached_token, expiration_date = (
-        reference.TokenManager.abstract_token_validation_get_reqs(username, password)
-    )
-    if cached_token:
-        return JsonResponse({"JWT": cached_token, "expired_date": expiration_date})
-    # not cached then make a new one
-    tooken, expdate = reference.TokenManager.make_configured_token(
-        username, password, {"username": "meftah"}
-    )
-    print("making a new one")
-    # we can cach the token here
-    reference.TokenManager.cash_token(username, password, tooken)
-    # print("caching the new one")
-    return JsonResponse({"JWT": tooken, "expired_date": expdate})
+
 
 
 @require_http_methods(["POST"])
@@ -83,14 +56,32 @@ def login(request):
     is_pc = request.user_agent.is_pc
     is_phone = request.user_agent.is_mobile
     browser = request.user_agent.browser.family
-    ip = get_client_ip(request)
+    ip = get_client_ip(request)[0]
+    ip = "192.168.0.8" # simulate an other ip addresse
     unauthorized = HttpResponseForbidden({"error": "authentication failed !"})
     def get_initial_data():
         data = get_body_from_request(request)
         if not data or not data.get("username") or not data.get("password"):
             return False
         return data["username"], data["password"]
-    def make_refreshtk_save_device(potential_user, refresh_token, aware_exp_date):
+    def save_device(potential_user:Users):
+        try:
+            device_values = {
+                'device': os_family + browser,
+                'is_pc': is_pc,
+                'is_phone': is_phone,
+                'device_ip_address': ip,
+                'user_ref': potential_user,
+            }
+            device, created = Users_devices.objects.get_or_create(
+                device_ip_address=device_values['device_ip_address'],
+                defaults=device_values,
+            )
+            return device
+        except Exception as e:
+            print(e)
+            return None
+    def save_refreshtoken_device(potential_user:Users, refresh_token, aware_exp_date):
         try:
             with transaction.atomic():
                 print("trying the atomic transaction")
@@ -122,6 +113,11 @@ def login(request):
                 print(e)
                 # some other error accured return unauthorized
                 return unauthorized
+    def devices_into_a_list(devices:Users_devices):
+        result = []
+        for device in devices:
+            result.append(device.device_ip_address)
+        return result
 
     username, password = get_initial_data()
     print("log", username, password)
@@ -132,10 +128,9 @@ def login(request):
     # and the original password , all of this to spare the database
 
     # used sha-256 because the same value gives the same hash, bycrypt changes cause of the salt
-    hashed_user_pass = hash_to_sha_256(password)
     cached_token, expiration_date = (
         reference.TokenManager.abstract_token_validation_get_reqs(
-            username, hashed_user_pass
+            username
         )
     )
     # if it's cached and the refresh token is valid
@@ -185,36 +180,50 @@ def login(request):
     except Exception as e:
         print("error while getting refresh token", e)
 
-    devices = []
+    devices = None
+    devices_array = []
     try:
+        # try and get the devices  connected using this account
         devices = Users_devices.objects.filter(user_ref=potential_user).all()
     except Exception as e:
         print("error getting devices or no devices", e)
-
+    # extract an array of ips
+    if devices:
+        devices_array = devices_into_a_list(devices)
+    # make sure to record this device
+    devices_array.append(ip)
     if not potetial_refresh_token:
         # generate token
         refresh_token, re_expdate, aware_exp_date = Refresh_tokens_manager.create_new_refresh_token()
         # no refresh token found , then we create one
         # and add this device ip to the devices related to the user
         # if the device doesn't already exist
-        make_refreshtk_save_device(potential_user, refresh_token, aware_exp_date)
+        save_refreshtoken_device(potential_user, refresh_token, aware_exp_date)
         # if passwords are match , create a new token and cach it then return it to the user
         tooken, expdate = reference.TokenManager.make_configured_token(
-            username,
-            password,
             {
                 "username": potential_user.user_username,
                 "id": potential_user.user_id,
                 "role": potential_user.role_ref.role_name,
-            },
+            }
         )
+        # cache the needed values
         reference.TokenManager.cash_token(
-            username, hashed_user_pass, {
+            username, {
             "JWT": tooken,
             "expiration_date": expdate,
             "refresh_token": refresh_token,
             "refresh_token_expiration_date": aware_exp_date.isoformat()
             }
+        )
+        Refresh_tokens_manager.cache_refresh_token(
+            reference.Redis, 
+            refresh_token, 
+            aware_exp_date.isoformat(), 
+            devices_array,
+            potential_user.user_username,
+            potential_user.user_id,
+            potential_user.role_ref.role_name
         )
         return JsonResponse(
         {"JWT": tooken, 
@@ -223,12 +232,15 @@ def login(request):
         "refresh_token_expiration_date": aware_exp_date.isoformat(),
         })
         
-    # refresh token exists , checking if it's valid
+    # refresh token exists ,and it's not valid
     if not Refresh_tokens_manager.check_cached_refresh_token(
         reference.Redis,
         potetial_refresh_token.refresh_token,
         potetial_refresh_token.expires_at
         ):
+        # try and record this device
+        if not save_device(potential_user):
+            return HttpResponseForbidden("some error accured, but the result is that you're not allowed in anyways")
         # the refresh token is expired
         print("refresh token is expired")
         # refreshing the refreshtoken
@@ -240,21 +252,28 @@ def login(request):
         except:
             return unauthorized
         tooken, expdate = reference.TokenManager.make_configured_token(
-            username,
-            password,
             {
                 "username": potential_user.user_username,
                 "id": potential_user.user_id,
                 "role": potential_user.role_ref.role_name,
-            },
+            }
         )
         reference.TokenManager.cash_token(
-            username, hashed_user_pass, {
+            username, {
             "JWT": tooken,
             "expiration_date": expdate,
             "refresh_token": refresh_token,
-            "refresh_token_expiration_date": aware_exp_date.isoformat()
+            "refresh_token_expiration_date": aware_exp_date.isoformat(),
             }
+        )
+        Refresh_tokens_manager.cache_refresh_token(
+            reference.Redis, 
+            refresh_token, 
+            aware_exp_date.isoformat(), 
+            devices_array,
+            potential_user.user_username,
+            potential_user.user_id,
+            potential_user.role_ref.role_name
         )
         return JsonResponse(
         {"JWT": tooken, 
@@ -262,23 +281,35 @@ def login(request):
         "refresh_token": refresh_token,
         "refresh_token_expiration_date": aware_exp_date.isoformat(),
         })
+    # refresh token exists and it's valid
     else:
+        # try and record this device
+        if not save_device(potential_user):
+            return HttpResponseForbidden("some error accured, but the result is that you're not allowed in anyways")
         tooken, expdate = reference.TokenManager.make_configured_token(
-            username,
-            password,
             {
                 "username": potential_user.user_username,
                 "id": potential_user.user_id,
                 "role": potential_user.role_ref.role_name,
-            },
+            }
         )
         reference.TokenManager.cash_token(
-            username, hashed_user_pass, {
+            username, {
             "JWT": tooken,
             "expiration_date": expdate,
             "refresh_token": potetial_refresh_token.refresh_token,
-            "refresh_token_expiration_date": potetial_refresh_token.expires_at.isoformat()
+            "refresh_token_expiration_date": potetial_refresh_token.expires_at.isoformat(),
+            "devices_array": devices_array
             }
+        )
+        Refresh_tokens_manager.cache_refresh_token(
+            reference.Redis, 
+            potetial_refresh_token.refresh_token, 
+            potetial_refresh_token.expires_at.isoformat(), 
+            devices_array,
+            potential_user.user_username,
+            potential_user.user_id,
+            potential_user.role_ref.role_name
         )
         return JsonResponse(
         {"JWT": tooken, 
@@ -289,14 +320,155 @@ def login(request):
     return JsonResponse({"err": "can't provide you with a token"})
 
 
-@require_http_methods(["GET"])
+@require_http_methods(["POST"])
 @csrf_exempt
 def refresh(request):
-    ip_client = get_client_ip(request)
-    if not ip_client:
-        return HttpResponseForbidden
-    Refresh_tokens.create(ip_client)
-    return JsonResponse({"done": "ok"})
+    unauthorized = HttpResponseForbidden({"err": "plz re-log in"})
+    body  = get_body_from_request(request)
+    ip_client = get_client_ip(request)[0]
+    ip_client = f"192.168.0.{random.choice(range(0, 10))}"
+    print(ip_client)
+    def is_this_ip_valid(current_ip:list, cached_refresh_token:dict):
+        ip_array = cached_refresh_token.get("devices_array")
+        if not ip_array:
+            # this user shouldn't be using this refresh token
+            return False
+        print(ip_array)
+        print(type(ip_array))
+        # note that the format of allowed_ip is (ip, flag)
+        for allowed_ip in ip_array:
+            print(f"{allowed_ip} ?= {current_ip}")
+            if allowed_ip == current_ip:
+                return True
+        return False
+    def get_refresh_token(token):
+        try:
+            refresh_token =  Refresh_tokens.objects.filter(refresh_token=token).first()
+            return refresh_token
+        except:
+            return None
+    def get_devices(refresh_toke:Refresh_tokens):
+        try:
+            devices = Users_devices.objects.filter(user_ref=refresh_token.user_id_ref).only("device_ip_address").all()
+            return devices
+        except:
+            return None
+    def get_user(refresh_token:Refresh_tokens):
+        try:
+            user = Users.objects.filter(user_id=refresh_token.user_id_ref).first()
+            if not user:
+                return None
+            return user
+        except:
+            return None
+    
+    def make_new_token_and_cachit(user:Users, refresh_token:Refresh_tokens):
+        tooken, expdate = reference.TokenManager.make_configured_token(
+        {
+            "username": user.user_username,
+            "id": user.user_id,
+            "role": user.role_ref.role_name,
+        }
+        )
+        print("caching the new generated token")
+        reference.TokenManager.cash_token(
+            username, {
+            "JWT": tooken,
+            "expiration_date": expdate,
+            "refresh_token": refresh_token.refresh_token,
+            "refresh_token_expiration_date": refresh_token.expires_at,
+            }
+        )
+        return tooken, expdate, refresh_token.refresh_token, refresh_token.expires_at
+    def make_new_token_and_cachit_from_cache(username_cache:str, id_cache:str, role_cache:str, refresh_token:str, refresh_expdate:str):
+        tooken, expdate = reference.TokenManager.make_configured_token(
+        {
+            "username": username_cache,
+            "id": id_cache,
+            "role": role_cache,
+        }
+        )
+        reference.TokenManager.cash_token(
+            username_cache, {
+            "JWT": tooken,
+            "expiration_date": expdate,
+            "refresh_token": refresh_token,
+            "refresh_token_expiration_date": refresh_expdate
+            }
+        )
+        return tooken, expdate, refresh_token, refresh_expdate
+    if not body.get("refresh_token"):
+        return unauthorized
+    # we check cach first 
+    cached_refresh_token = Refresh_tokens_manager.get_refresh_token_from_cach(reference.Redis, body.get("refresh_token"))
+    print("cached_refresh_>> ", cached_refresh_token)
+    if cached_refresh_token:
+        # check if the ip is allowed and the refresh token is valid
+        print("here")
+        if is_this_ip_valid(ip_client, cached_refresh_token) and \
+            Refresh_tokens_manager.check_cached_refresh_token(
+                reference.Redis,
+                body.get("refresh_token"),
+                cached_refresh_token.get("exp_date")
+                ):
+                print("checked the validity from cache")
+                user = get_user(body.get("refresh_token"))
+                token, expdate, refresh_token, refresh_tk_exp_date = make_new_token_and_cachit_from_cache(
+                    cached_refresh_token.get("username"),
+                    cached_refresh_token.get("id"),
+                    cached_refresh_token.get("role"),
+                    body.get("refresh_token"),
+                    cached_refresh_token.get("exp_date")
+                )
+                return JsonResponse(
+                {"JWT": token, 
+                "expiration_date": expdate,
+                "refresh_token": refresh_token,
+                "refresh_token_expiration_date": refresh_tk_exp_date,
+                })
+        print("not valid ")
+        return unauthorized
+    # if no cash we'll have to hit the db
+    refresh_token =  get_refresh_token(body.get("refresh_token"))
+    if not refresh_token : 
+        return unauthorized
+    
+    devices = get_devices(refresh_token.user_id_ref)
+    if not devices:
+        return unauthorized
+
+    flag = False
+    for device in devices:
+        if device.device_ip_address == ip_client:
+            flag = True
+            break
+    
+    # the current device is not in the allowed list
+    if flag is False:
+        return unauthorized
+    
+    # the device is allowed, now checking if the refresh_token is valid
+    valid = Refresh_tokens_manager.check_cached_refresh_token(
+        reference.Redis,
+        refresh_token.refresh_token,
+        refresh_token.expires_at
+    )
+    if valid:
+        # if refresh token is valid then we return a new configured token
+        user = get_user(refresh_token)
+        if not user:
+            return unauthorized
+        # configure the token
+        token, expdate, refresh_token, refresh_tk_exp_date  = make_new_token_and_cachit(user, refresh_token)
+
+        return JsonResponse(
+        {"JWT": token, 
+        "expiration_date": expdate,
+        "refresh_token": refresh_token,
+        "refresh_token_expiration_date": refresh_tk_exp_date,
+        })
+        print("refresh token is valid")
+    return unauthorized
 
 
 @require_http_methods(["POST"])

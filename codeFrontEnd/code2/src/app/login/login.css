@@ -3,13 +3,15 @@
     src: url("../../../public/Chakra_Petch/ChakraPetch-Medium.ttf");
 }
 .container{
-    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+
 }
 .login_panel{
-    height: 500px;
+    margin-top: 50px;
+    margin-bottom: 50px;
+    min-height: 500px;
     width: 800px;
     background-color: var(--divs_colors);
     box-shadow: var(--div-box-shadow);
@@ -38,6 +40,7 @@
     height: 100%;
     width: 100%;
     flex-wrap: wrap;
+    gap: 10px;
 }
 .no_account>p{
     height: fit-content;
@@ -49,4 +52,33 @@
 }
 .no_account>p>a{
     text-decoration: underline;
+}
+#llk1{
+    text-decoration: underline;
+}
+#logbtn:hover{
+    scale: 1.03;
+    transition: all 0.1s ease-in-out;
+    cursor: pointer;
+}
+
+
+
+@media screen and (min-width: 300px) and (max-width: 700px){
+    .login_panel{
+        min-height: 500px;
+        width: 300px;
+    }
+}
+@media screen and (min-width: 700px) and (max-width: 1000px){
+    .login_panel{
+        min-height: 500px;
+        width: 700px;
+    }
+    
+}
+.centerize{
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

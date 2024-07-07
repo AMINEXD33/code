@@ -223,10 +223,10 @@ class Users_devices(models.Model):
     is_pc = models.BooleanField(default=False)
     is_phone = models.BooleanField(default=False)
     def __repr__(self):
-        f"""
+        return f"""
                     USERS DEVICES
         --------------------------------------------
-        id_users_device = {self.id_Users_device}
+        id_users_device = {self.id_users_device}
         device = {self.device}
         device_ip_address = {self.device_ip_address}
         user_ref = {self.user_ref}
@@ -239,11 +239,11 @@ class Refresh_tokens(models.Model):
     expires_at = models.DateTimeField(null=False)
 
     def __repr__(self):
-        f"""
+        return f"""
                     REFRESH_TOKENS
         -----------------------------------------
         id_refresh_token = {self.id_refresh_token}
-        refresh_token = {self.refresh_from_db}
+        refresh_token = {self.refresh_token}
         expires_at = {self.expires_at}
         """
     def create2(user_ref_id:str, token:str, exp_date:str):

@@ -21,33 +21,37 @@ function log_user_in(token)
 {
     console.log(token);
     let expires_at = splite_date(token["expired_date"])
-
     Cookies.set("JWT", token["JWT"], {expires:expires_at})
-
 }
 export async function login(username, password)
 {
     return new Promise(async(resolve, reject)=>{
-        const resp = await fetch(END_POINT, 
+        try{
+            const resp = await fetch(END_POINT, 
+                {
+                    method:"POST",
+                    body: JSON.stringify({
+                        "username": username,
+                        "password": password
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                }
+            )
+            if (!resp.ok)
             {
-                method:"POST",
-                body: JSON.stringify({
-                    "username": username,
-                    "password": password
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                reject(new Error ("login failed !"));
             }
-        )
-        if (!resp.ok)
-        {
-            reject(new Error ("login failed !"));
+            let token = await resp.json()
+            .then(data=>log_user_in(data))
+            .catch(error=>console.log(error));
+            console.log("here");
+            resolve(true);
         }
-        let token = await resp.json()
-        .then(data=>log_user_in(data))
-        .catch(error=>console.log(error));
-        console.log("here");
-        resolve(true);
+        catch(exeption){
+            console.log("here2");
+            reject(exeption);
+        }
     })
 }

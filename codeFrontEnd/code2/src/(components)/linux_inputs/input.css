@@ -39,6 +39,9 @@
     flex-wrap: nowrap;
     width: 40%;
 }
+.name{
+    text-wrap: nowrap;
+}
 
 @keyframes apear {
     from{
@@ -67,5 +70,21 @@
         width: 80%;
         scale: 1;
 
+    }
+}
+@media screen and (min-width: 300px) and (max-width: 700px) {
+    
+    .linux_input{
+        flex-wrap: wrap;
+    }
+}
+@media screen and (min-width: 700px) and (max-width: 1000px){
+    .linux_input{
+        flex-wrap: wrap;
+    }
+}
+@media screen and (min-width: 200px){
+    .linux_input{
+        flex-wrap: wrap;
     }
 }

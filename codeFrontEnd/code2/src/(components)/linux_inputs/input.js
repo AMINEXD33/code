@@ -46,7 +46,7 @@ export default function Input({
         <>
             <div className="linux_input" id={id} ref={inpt}>
                 <div className="info">
-                    {name}<p className="dollar" ref={inpt3}>$</p>
+                    <p className="name">{name}</p><p className="dollar" ref={inpt3}>$</p>
                 </div>
                 <input
                     type={type}
