@@ -13,7 +13,7 @@ from jwt_api.utils.refresh_tokens import Refresh_tokens_manager
 from jwt_api.models import Refresh_tokens
 from django.db import transaction
 from django.db.utils import IntegrityError, DatabaseError
-
+from logs_util.log_core import LogCore
 reference = apps.get_app_config("jwt_api").my_object
 # Create your views here.
 
@@ -52,6 +52,9 @@ def login(request):
     """ "
     this view signs in  a client
     """
+    # re-referencing the global var for better performance
+    global reference
+    log = LogCore("views.py, def refresh", False)
     os_family = request.user_agent.os.family
     is_pc = request.user_agent.is_pc
     is_phone = request.user_agent.is_mobile
@@ -79,12 +82,11 @@ def login(request):
             )
             return device
         except Exception as e:
-            print(e)
+            log.log_exception(e)
             return None
     def save_refreshtoken_device(potential_user:Users, refresh_token, aware_exp_date):
         try:
             with transaction.atomic():
-                print("trying the atomic transaction")
                 # try and create a new refresh token
                 obj = Refresh_tokens.objects.create(
                     user_id_ref=potential_user,
@@ -100,7 +102,6 @@ def login(request):
                     user_ref = potential_user
                 )
         except Exception as e:
-            print("error device already exists", e)
             # device already exist, create only the refresh_token
             try:
                 with transaction.atomic():
@@ -110,7 +111,7 @@ def login(request):
                     expires_at=aware_exp_date,
                     )
             except Exception as e:
-                print(e)
+                log.log_exception(e)
                 # some other error accured return unauthorized
                 return unauthorized
     def devices_into_a_list(devices:Users_devices):
@@ -120,7 +121,6 @@ def login(request):
         return result
 
     username, password = get_initial_data()
-    print("log", username, password)
     # let's check if the token is cashed
     # well we're using the hashed password and username to
     # check for caching , so that's pretty safe, giving the only
@@ -138,7 +138,6 @@ def login(request):
         if cached_token.get("JWT") and \
             Refresh_tokens_manager.check_cached_refresh_token(reference.Redis, 
             cached_token["refresh_token"], cached_token["refresh_token_expiration_date"]):
-            print("from cach")
             return JsonResponse(
                 {"JWT": cached_token.get("JWT"), 
                 "expiration_date": cached_token.get("expiration_date"),
@@ -152,33 +151,26 @@ def login(request):
         potential_user = Users.objects.select_related("role_ref").get(
             user_username=username
         )
-        print("got the user!!!!")
         # if no user then return a 404
         # just to be safe we'll test for a None Value because I don't know
         # if the query always raises not found
         if not potential_user:
-            print("didnt find a user")
             return unauthorized
     except:
         # the query is empty
-        print("didnt find a user")
         return unauthorized
 
     # if the hashed user passed password doesn't equal the one stored in the db
     if not bcrypt.checkpw(
         password.encode("utf-8"), potential_user.user_password.encode("utf-8")
     ):
-        print("wrong password")
-        print("userpass = ", password.decode("utf-8"))
-        print("db_pass  = ", potential_user.user_password)
         return unauthorized
     # check if the user has any refresh tokens, in db
     potetial_refresh_token = None
     try:
         potetial_refresh_token = Refresh_tokens.objects.select_related("user_id_ref").get(user_id_ref=potential_user)
-        print("we've found an already stored token for this user ", potetial_refresh_token)
     except Exception as e:
-        print("error while getting refresh token", e)
+        log.log_exception("error while getting refresh token "+e)
 
     devices = None
     devices_array = []
@@ -186,7 +178,7 @@ def login(request):
         # try and get the devices  connected using this account
         devices = Users_devices.objects.filter(user_ref=potential_user).all()
     except Exception as e:
-        print("error getting devices or no devices", e)
+        log.log_exception("error getting devices or no devices "+e)
     # extract an array of ips
     if devices:
         devices_array = devices_into_a_list(devices)
@@ -242,7 +234,6 @@ def login(request):
         if not save_device(potential_user):
             return HttpResponseForbidden("some error accured, but the result is that you're not allowed in anyways")
         # the refresh token is expired
-        print("refresh token is expired")
         # refreshing the refreshtoken
         refresh_token, re_expdate, aware_exp_date = Refresh_tokens_manager.create_new_refresh_token()
         try:
@@ -323,21 +314,19 @@ def login(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def refresh(request):
+    # re-referencing the global var for better performance
+    global reference
+    log = LogCore("views.py, def refresh", False)
     unauthorized = HttpResponseForbidden({"err": "plz re-log in"})
     body  = get_body_from_request(request)
     ip_client = get_client_ip(request)[0]
-    ip_client = f"192.168.0.{random.choice(range(0, 10))}"
-    print(ip_client)
     def is_this_ip_valid(current_ip:list, cached_refresh_token:dict):
         ip_array = cached_refresh_token.get("devices_array")
         if not ip_array:
             # this user shouldn't be using this refresh token
             return False
-        print(ip_array)
-        print(type(ip_array))
         # note that the format of allowed_ip is (ip, flag)
         for allowed_ip in ip_array:
-            print(f"{allowed_ip} ?= {current_ip}")
             if allowed_ip == current_ip:
                 return True
         return False
@@ -370,7 +359,6 @@ def refresh(request):
             "role": user.role_ref.role_name,
         }
         )
-        print("caching the new generated token")
         reference.TokenManager.cash_token(
             username, {
             "JWT": tooken,
@@ -401,17 +389,14 @@ def refresh(request):
         return unauthorized
     # we check cach first 
     cached_refresh_token = Refresh_tokens_manager.get_refresh_token_from_cach(reference.Redis, body.get("refresh_token"))
-    print("cached_refresh_>> ", cached_refresh_token)
     if cached_refresh_token:
         # check if the ip is allowed and the refresh token is valid
-        print("here")
         if is_this_ip_valid(ip_client, cached_refresh_token) and \
             Refresh_tokens_manager.check_cached_refresh_token(
                 reference.Redis,
                 body.get("refresh_token"),
                 cached_refresh_token.get("exp_date")
                 ):
-                print("checked the validity from cache")
                 user = get_user(body.get("refresh_token"))
                 token, expdate, refresh_token, refresh_tk_exp_date = make_new_token_and_cachit_from_cache(
                     cached_refresh_token.get("username"),
@@ -426,7 +411,6 @@ def refresh(request):
                 "refresh_token": refresh_token,
                 "refresh_token_expiration_date": refresh_tk_exp_date,
                 })
-        print("not valid ")
         return unauthorized
     # if no cash we'll have to hit the db
     refresh_token =  get_refresh_token(body.get("refresh_token"))
@@ -467,7 +451,6 @@ def refresh(request):
         "refresh_token": refresh_token,
         "refresh_token_expiration_date": refresh_tk_exp_date,
         })
-        print("refresh token is valid")
     return unauthorized
 
 

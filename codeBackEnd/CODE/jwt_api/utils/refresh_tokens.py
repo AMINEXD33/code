@@ -4,6 +4,9 @@ import random, os
 import datetime, json
 from datetime import timedelta
 from django.utils import timezone
+from logs_util.log_core import LogCore
+
+log = LogCore("refresh_token.py", False)
 class Refresh_tokens_manager:
     __EXPERATION_RANGE = 3 # days
     __CACHE_TOKENS = True
@@ -63,10 +66,9 @@ class Refresh_tokens_manager:
                 "role":role
                 }
             redis_conn_instance.set(token, json.dumps(value))
-            print("cached refresh token")
             return True
         except Exception as e:
-            print(e)
+            log.log_exception(e)
             return False
     @staticmethod
     def get_refresh_token_from_cach(redis_conn_instance, token):
@@ -105,9 +107,8 @@ class Refresh_tokens_manager:
                 pip.multi()
                 redis_conn_instance.delete(token)
                 pip.execute()
-                print("refresh token removed")
-            except:
-                pass
+            except Exception as e:
+                log.log_exception(e)
             finally:
                 Refresh_tokens_manager.release_lock(redis_conn_instance)
 
@@ -120,14 +121,12 @@ class Refresh_tokens_manager:
         """
         
         current_date = timezone.make_aware(datetime.datetime.now())
-        print("TAHAT TYPE = ", type(token_isonformate_expdate))
         loaded_ison_format = token_isonformate_expdate
         if type(loaded_ison_format) == type(""):
             loaded_ison_format = datetime.datetime.fromisoformat(token_isonformate_expdate)
 
         if current_date > loaded_ison_format:
             Refresh_tokens_manager.remove_refresh_token_from_cach(Redis_conn, token)
-            print("expired refrech token")
             return False
         return True
 

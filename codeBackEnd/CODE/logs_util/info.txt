@@ -1,0 +1,1 @@
+[[92m2024-07-07 15:27:51[0m]([93mviews.py, def refresh[0m):[94m it's working[0m

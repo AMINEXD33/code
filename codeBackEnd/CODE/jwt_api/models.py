@@ -7,7 +7,9 @@ import datetime
 from datetime import timedelta
 from django.utils import timezone
 from jwt_api.utils.refresh_tokens import Refresh_tokens_manager
+from logs_util.log_core import LogCore
 
+log = LogCore("models.py", False)
 class Role(models.Model):
     role_id = models.BigAutoField(primary_key=True)
     role_name = models.CharField(max_length=50, null=False)
@@ -69,7 +71,6 @@ class Users(models.Model):
         password_bytes = user_password.encode("utf-8")
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
-        print(hashed_password)
         # genereate a random uuid4 id
         uuid_random = uuid.uuid4()
 
@@ -118,7 +119,6 @@ class Session(models.Model):
         """
         # let's check if the user is admin
         if not Users:
-            print("no user passed")
             return None
         # create the objects
         try:
@@ -136,7 +136,7 @@ class Session(models.Model):
                 user_id_ref=session_starter
             )
         except Exception as e:
-            print("error while running creating session models +++++>", e)
+            log.log_exception("error while running creating session models +++++>"+ e)
             return None
         # save using a transaction
         try:
@@ -146,7 +146,7 @@ class Session(models.Model):
                 session_user_pool.save()
                 users_stats.save()
         except Exception as e:
-            print("error while executing transaction", e)
+            log.log_exception("error while executing transaction"+ e)
             return None
             
 class Session_correction_pool(models.Model):
@@ -256,5 +256,5 @@ class Refresh_tokens(models.Model):
             ).save()
             return obj
         except Exception as e:
-            print("error creating refresh token  ", e)
+            log.log_exception("error creating refresh token  "+ e)
         return False
