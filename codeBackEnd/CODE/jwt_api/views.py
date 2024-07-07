@@ -326,8 +326,6 @@ def refresh(request):
     unauthorized = HttpResponseForbidden({"err": "plz re-log in"})
     body  = get_body_from_request(request)
     ip_client = get_client_ip(request)[0]
-    ip_client = f"192.168.0.{random.choice(range(0, 10))}"
-    print(ip_client)
     def is_this_ip_valid(current_ip:list, cached_refresh_token:dict):
         ip_array = cached_refresh_token.get("devices_array")
         if not ip_array:
