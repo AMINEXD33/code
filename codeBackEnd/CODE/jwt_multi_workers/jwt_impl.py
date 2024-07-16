@@ -105,7 +105,7 @@ class JWT_IMP:
 
     def decr_token(self, encrypted_token):
         """
-        this function takes an encrypted token and decrypt it 
+        this function takes an encrypted token and decrypt it
         Return: decrypted token ot None if an error accured,
         """
         try:

@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-!e&*ncs_@%_gg6o!8!*2d2rt-pl!a7+q-&3w4@pj%b6_&t%!8a
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "*"
+    'http://localhost:3000',
+    '*'
 ]
 
 
@@ -142,3 +143,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 USER_AGENTS_CACHE = 'default'
+
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = None
+
+SESSION_COOKIE_HTTPONLY = True 
+SESSION_COOKIE_SAMESITE = None
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True

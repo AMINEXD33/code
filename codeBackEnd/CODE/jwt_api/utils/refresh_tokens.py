@@ -8,7 +8,7 @@ from logs_util.log_core import LogCore
 
 log = LogCore("refresh_token.py", False)
 class Refresh_tokens_manager:
-    __EXPERATION_RANGE = 3 # days
+    EXPERATION_RANGE = 3 # days
     __CACHE_TOKENS = True
     __LOCK_NAME = "RFT_LOCK"
     @staticmethod
@@ -48,7 +48,7 @@ class Refresh_tokens_manager:
         Return: token, expiration_date_isonformat
         """
         token = Refresh_tokens_manager.gen_refresh_tok()
-        exp_date = datetime.datetime.now() + timedelta(minutes=Refresh_tokens_manager.__EXPERATION_RANGE)
+        exp_date = datetime.datetime.now() + timedelta(days=Refresh_tokens_manager.EXPERATION_RANGE)
         aware_object = timezone.make_aware(exp_date)
         return token, exp_date.isoformat(), aware_object
     

@@ -28,9 +28,13 @@ def hash_to_sha_256(password: str):
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 
-def get_http_authorization(request):
+def get_refresh_token_http_header(request):
     try:
-        return request.META.get("HTTP_AUTHORIZATION", "")
+        refresh_token = request.META.get("HTTP_COOKIE", "")
+        if not refresh_token: 
+            return None
+        refresh_token = refresh_token.split("=")
+        return refresh_token[1]
     except:
         return None
 
@@ -315,10 +319,12 @@ def login(request):
 @csrf_exempt
 def refresh(request):
     # re-referencing the global var for better performance
+    print('HERE')
     global reference
     log = LogCore("views.py, def refresh", False)
     unauthorized = HttpResponseForbidden({"err": "plz re-log in"})
-    body  = get_body_from_request(request)
+    refresh_token_from_request  = get_refresh_token_http_header(request)
+
     ip_client = get_client_ip(request)[0]
     def is_this_ip_valid(current_ip:list, cached_refresh_token:dict):
         ip_array = cached_refresh_token.get("devices_array")
@@ -385,24 +391,24 @@ def refresh(request):
             }
         )
         return tooken, expdate, refresh_token, refresh_expdate
-    if not body.get("refresh_token"):
+    if not refresh_token_from_request:
         return unauthorized
     # we check cach first 
-    cached_refresh_token = Refresh_tokens_manager.get_refresh_token_from_cach(reference.Redis, body.get("refresh_token"))
+    cached_refresh_token = Refresh_tokens_manager.get_refresh_token_from_cach(reference.Redis, refresh_token_from_request)
     if cached_refresh_token:
         # check if the ip is allowed and the refresh token is valid
         if is_this_ip_valid(ip_client, cached_refresh_token) and \
             Refresh_tokens_manager.check_cached_refresh_token(
                 reference.Redis,
-                body.get("refresh_token"),
+                refresh_token_from_request,
                 cached_refresh_token.get("exp_date")
                 ):
-                user = get_user(body.get("refresh_token"))
+                user = get_user(refresh_token_from_request)
                 token, expdate, refresh_token, refresh_tk_exp_date = make_new_token_and_cachit_from_cache(
                     cached_refresh_token.get("username"),
                     cached_refresh_token.get("id"),
                     cached_refresh_token.get("role"),
-                    body.get("refresh_token"),
+                    refresh_token_from_request,
                     cached_refresh_token.get("exp_date")
                 )
                 return JsonResponse(
@@ -413,7 +419,7 @@ def refresh(request):
                 })
         return unauthorized
     # if no cash we'll have to hit the db
-    refresh_token =  get_refresh_token(body.get("refresh_token"))
+    refresh_token =  get_refresh_token(refresh_token_from_request)
     if not refresh_token : 
         return unauthorized
     
