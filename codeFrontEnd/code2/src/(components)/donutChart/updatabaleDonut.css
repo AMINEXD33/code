@@ -1,0 +1,15 @@
+.placeholder_for_piechart{
+    width: 200px;
+    height: 200px;
+    background: var(--session_holder_gradiat);
+    /*this animation is from session_slider.css*/
+    animation: gradiant_animation 1s linear forwards infinite;
+    background-size: 200% 200%;
+    border-radius: 50%;
+    filter: blur(5px);
+}
+.responsiveCont{
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}

@@ -1,13 +1,18 @@
 import datetime
 from datetime import timedelta
+import json
+import hashlib
+from logs_util.log_core import LogCore
+import time
+log = LogCore("token_manager.py", False)
 
 
 class Token_manager:
 
-    __CALLS_TO_CHANGE_KEYS = 5  #
+    __CALLS_TO_CHANGE_KEYS = 10000  #
 
     __CALLS = 0
-    __EXPIRED_AFTER = 1  # days
+    __EXPIRED_AFTER = 15  # min
     __USE_CACHING = True  # cache the tokens
     __BLACK_LIST_NAME = "bllist"  # the name of the black hash set in redis
     __CACHING_LIST_NAME = "tkcach"  # the name of the caching hash set in redis
@@ -21,6 +26,17 @@ class Token_manager:
         self.lock_key2 = "caching_lock/afafgaf"
         self.lock_count = "countafagagaga"
 
+    def to_sha_256(self, jwt_token: str):
+        """
+        hash jwt_token to an sha256
+        """
+        try:
+            hashed = hashlib.sha256(jwt_token.encode("utf-8")).hexdigest()
+            return hashed
+        except Exception as e:
+            log.log_exception("hashing error " + e)
+            return None
+
     """token configuration methods"""
 
     def configure_token(self, token: dict):
@@ -30,27 +46,26 @@ class Token_manager:
         """
         # calculate expiration data
         current_date = datetime.datetime.now()
-        expiration_date = current_date + timedelta(days=Token_manager.__EXPIRED_AFTER)
-        expiration_date = expiration_date.strftime("%Y/%m/%d %H:%M:%S")
+        expiration_date = current_date + timedelta(
+            minutes=Token_manager.__EXPIRED_AFTER
+        )  ### REFACTOR TO DAYS !!!!
+        expiration_date = expiration_date.strftime("%Y-%m-%d %H:%M:%S")
 
         # TO DO , add if the user is admin
 
         # attach the new values
         token["provider"] = Token_manager.__PROVIDER
-        token["expitation_date"] = expiration_date
-
+        token["expiration_date"] = expiration_date
         # we return the token and it's expiration date
         return token, expiration_date
 
-    def make_configured_token(self, username: str, password: str, claims: dict):
+    def make_configured_token(self, claims: dict):
         """
         this function takes the claims configures them then encrypt them
         using the jwt_impl.make_token function
         Return: encrypted_token(str), expiration_date(str)
         """
         # check count calls
-        print(Token_manager.__CALLS)
-
         if Token_manager.__CALLS >= Token_manager.__CALLS_TO_CHANGE_KEYS:
             self.safe_reload()  # reset the encryption keys , cach set , balack list
             Token_manager.__CALLS = 0  # reset calls
@@ -94,23 +109,25 @@ class Token_manager:
 
     """blacklist methods"""
 
-    def add_to_blacklist(self, token):
+    def add_to_blacklist(self, token: str):
         """
-        this function black lists a token in a locked transaction
+        this function hashes the token and adds it to the blacklist
         """
+
         with self.jwt_impl.Redis.pipeline() as pip:
             try:
                 self.acquire_lock(1)
                 pip.multi()
-                self.jwt_impl.Redis.hset(Token_manager.__BLACK_LIST_NAME, token, "")
+                self.jwt_impl.Redis.hset(
+                    Token_manager.__BLACK_LIST_NAME, self.to_sha_256(token), ""
+                )
                 pip.execute()
-                print("added tp black list")
-            except:
-                pass
+            except Exception as e:
+                log.log_exception(e)
             finally:
                 self.release_lock(1)
 
-    def remove_from_blacklist(self, token):
+    def remove_from_blacklist(self, token: str):
         """
         this function removes a token from the black list  in a locked transaction
         """
@@ -118,21 +135,26 @@ class Token_manager:
             try:
                 self.acquire_lock(1)
                 pip.multi()
-                self.jwt_impl.Redis.hdel(Token_manager.__BLACK_LIST_NAME, token)
+                self.jwt_impl.Redis.hdel(
+                    Token_manager.__BLACK_LIST_NAME, self.to_sha_256(token)
+                )
                 pip.execute()
-                print("removed black list")
-            except:
-                pass
+            except Exception as e:
+                log.log_exception(e)
             finally:
                 self.release_lock(1)
 
-    def is_black_listed(self, token):
+    def is_black_listed(self, token: str):
         """
         this function checks if a token is black listed
         return : true or false
         """
-        token = self.jwt_impl.Redis.hget(Token_manager.__BLACK_LIST_NAME, token)
-        if token:
+        token = self.jwt_impl.Redis.hget(
+            Token_manager.__BLACK_LIST_NAME, self.to_sha_256(token)
+        )
+        # sinse we've used "" for the value of the key, we can't compair using == since it will always
+        # return False
+        if token != None:
             return True
         return False
 
@@ -143,33 +165,32 @@ class Token_manager:
                 pip.multi()
                 self.jwt_impl.Redis.delete(Token_manager.__BLACK_LIST_NAME)
                 pip.execute()
-                print("black list reseted")
-            except:
-                pass
+            except Exception as e:
+                log.log_exception(e)
             finally:
                 self.release_lock(1)
 
     """caching methods"""
 
-    def cash_token(self, username: str, password: str, token: str):
+    def cash_token(self, username: str, data: dict):
         """
-        this function cahches a token in a locked transaction
+        this function cahches some dict in a locked transaction
         """
+        jsonify_dict = json.dumps(data)
         with self.jwt_impl.Redis.pipeline() as pip:
             try:
                 self.acquire_lock(2)
                 pip.multi()
                 self.jwt_impl.Redis.hset(
-                    Token_manager.__CACHING_LIST_NAME, username + password, token
+                    Token_manager.__CACHING_LIST_NAME, username, jsonify_dict
                 )
                 pip.execute()
-                print("cached successfully")
-            except:
-                pass
+            except Exception as e:
+                log.log_exception(e)
             finally:
                 self.release_lock(2)
 
-    def uncash_token(self, username: str, password: str, token: str):
+    def uncash_token(self, username: str):
         """
         this function removes a cached token in a locked transaction
         """
@@ -177,27 +198,25 @@ class Token_manager:
             try:
                 self.acquire_lock(2)
                 pip.multi()
-                self.jwt_impl.Redis.hdel(
-                    Token_manager.__CACHING_LIST_NAME, username + password, token
-                )
+                self.jwt_impl.Redis.hdel(Token_manager.__CACHING_LIST_NAME, username)
                 pip.execute()
-                print("unchached successfully")
-            except:
-                pass
+            except Exception as e:
+                log.log_exception(e)
             finally:
                 self.release_lock(2)
 
-    def is_cached(self, username: str, password: str):
+    def is_cached(self, username: str):
         """
         this function checks if a token is cached or not
-        Return: the token  or false
+        Return: a dict or false
         """
-        cached = self.jwt_impl.Redis.hget(
-            Token_manager.__CACHING_LIST_NAME, username + password
-        )
-        if cached:
-            return cached
-        else:
+        cached = self.jwt_impl.Redis.hget(Token_manager.__CACHING_LIST_NAME, username)
+        try:
+            if cached:
+                return json.loads(cached)
+            else:
+                return False
+        except:
             return False
 
     def reset_cach(self):
@@ -207,9 +226,8 @@ class Token_manager:
                 pip.multi()
                 self.jwt_impl.Redis.delete(Token_manager.__CACHING_LIST_NAME)
                 pip.execute()
-                print("reseted cach")
-            except:
-                pass
+            except Exception as e:
+                log.log_exception(e)
             finally:
                 self.release_lock(2)
 
@@ -219,10 +237,9 @@ class Token_manager:
         key = username + password
         decrypted_tok = self.jwt_impl.decr_token(token)
         current_date = datetime.datetime.now()
-        if current_date >= decrypted_tok["expitation_date"]:
+        if current_date >= decrypted_tok["expiration_date"]:
             # this token is not valid anymore , we can black list it
             self.add_to_blacklist(token)
-            print("figure_token")
             return False
         # still a valid token
         return True
@@ -235,39 +252,83 @@ class Token_manager:
             self.reset_cach()
             self.jwt_impl.keys.remove_pair()
             self.jwt_impl.sync_keys()
-            print("safe reload done")
         except Exception as e:
-            print("safe reload error", e)
+            log.log_exception("safe reload error " + e)
 
     """abstraction to validate the token"""
-    def abstract_token_validation(self, username:str, password:str, token:str, expiration_date:str):
+
+    def abstract_token_validation(self, token: str):
         """
-        this function validate if a token is a valid one or not, it will check if it's black listed,
-        if not it will check the expiration date, and cach the token if the __USE_CACHING is true
-        Return: if the token is valid (True), if not (False)
+        this function will validate the giving token , by checking the blacklist
+        and then try and decrypt it, and finally checking the expiration date
+        Return: if the token is good (decrepted token), unvalid token (False)
         """
         # check if token is black listed
         if self.is_black_listed(token):
-            print("token found in black list")
-            return (False)
-        # check if the token is valid
-        current_datetime = datetime.datetime.now()
-        expiration_date_parsed = datetime.datetime.strptime(expiration_date, "%Y/%m/%d %H:%M:%S")
-        if current_datetime >= expiration_date_parsed:
-            # add to black list
+            return False
+        # decrypt token
+        dec_tok = None
+        try:
+            dec_tok = json.loads(self.jwt_impl.decr_token(token).claims)
+        except:
+            log.log_exception("can't decrept")
+            return False
+        # check if token is expired
+        expiration_date_str = dec_tok["expiration_date"]
+        current_date = datetime.datetime.now()
+        expiration_date_obj = None
+        try:
+            expiration_date_obj = datetime.datetime.strptime(
+            expiration_date_str, "%Y/%m/%d %H:%M:%S"
+            )
+        except:
+            try:
+                expiration_date_obj = datetime.datetime.strptime(
+                expiration_date_str, "%Y-%m-%d %H:%M:%S"
+                )
+            except:
+                return False
+                
+        if current_date >= expiration_date_obj:
             self.add_to_blacklist(token)
-            print("black listing token")
-            # token expired
-            return (False)
-        # if no caching allowed then return true, sinse the token is valid
-        if not Token_manager.__USE_CACHING:
-            return (True)
-        # cach token
-        self.cash_token(username, password, token)
-        print("cached token")
-        return (True)
+            log.log_exception("expired tok")
+            return False
 
+        return dec_tok
 
-        
-        
-        
+    def abstract_token_validation_get_reqs(self, username: str):
+        """
+        this function is meant to be used in the context of an authentication request , when the user send
+        a username/email and a password, it checks if a token is cached , if so it will check the validity of
+        it , if it's valid it will return the token
+        return: if valid (token, expired_date)  , if not valid (False, None)
+        """
+        # check if the token is cached
+        data = self.is_cached(username)
+        if data == False:
+            return (False, None)
+        cached = data.get("JWT")
+        if not cached:
+            # not cached
+            return (False, None)
+        # if it's cached it need not to be blacklisted
+        if self.is_black_listed(cached):
+            self.uncash_token(username)
+            return (False, None)
+        dec_tok = None
+        try:
+            dec_tok = json.loads(self.jwt_impl.decr_token(cached).claims)
+        except:
+            return (False, None)
+        expiration_date = dec_tok["expiration_date"]
+        # is the token valid
+        current_datetime = datetime.datetime.now()
+        expiration_date_parsed = datetime.datetime.strptime(
+            expiration_date, "%Y-%m-%d %H:%M:%S"
+        )
+        if current_datetime >= expiration_date_parsed:
+            self.uncash_token(username)
+            self.remove_from_blacklist(cached)
+            return (False, None)
+        # the token then must be valid
+        return (data, expiration_date)

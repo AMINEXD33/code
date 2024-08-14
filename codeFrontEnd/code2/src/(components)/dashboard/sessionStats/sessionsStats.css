@@ -1,0 +1,63 @@
+.sessionstats{
+    width: 100px;
+    width: 100%;
+    min-height: 200vh;
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    gap: 20px;
+}
+.division0,.division1, .division2{
+    width: 100%;
+    background-color: var(--windows_background);
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    border-radius: 20px;
+
+    flex-wrap: wrap;
+    padding: 20px;
+}
+.division1{
+
+    height: 400px;
+}
+.division0{
+    height: 150px;
+    justify-content: center;
+    align-items: center;
+}
+
+.subdiv1_0, .subdiv1_1{
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    padding: 10px;
+}
+
+.subdivTitle{
+    
+}
+.subdiv1_0{
+
+    left: 0;
+    /* background-color: rgba(0, 128, 39, 0.274); */
+}
+.subdiv1_1{
+
+    right: 0;
+    /* background-color: rgba(240, 0, 0, 0.274); */
+}
+.subdiv2_0{
+    display: flex;
+    align-items: center;
+    justify-content: center;   
+    width: 100%;
+    flex-direction: column;
+}
+.cusomtLabel{
+    color: var(--color);
+}
+.responsiveCont{
+    max-height: 300px;
+}

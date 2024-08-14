@@ -1,0 +1,175 @@
+.navbar{
+    width: 100%;
+    min-height: 120px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--divs_colors);
+    justify-content: space-between;
+    padding: 10px;
+    font-family: ubuntu;
+    border-radius: 0px 0px 10px 10px ;
+    position: fixed;
+    top: 0;
+    z-index: 2;
+}
+.placeholder{
+    width: 100%;
+    min-height: 120px;
+}
+.up{
+    animation: nav_down 0.3s alternate forwards ease-in-out;
+}
+.down{
+    animation: nav_top 0.3s alternate forwards ease-in-out;
+}
+
+@keyframes nav_top {
+    from {
+        transform: translateY(0%);
+    }
+    to{
+        transform: translateY(-100%);
+    }
+}
+@keyframes nav_down {
+    from {
+        transform: translateY(-100%);
+    }
+    to{
+        transform: translateY(0%);
+    }
+}
+
+.link_list{
+    display: flex;
+    flex-wrap: wrap;
+}
+.link_list>ul{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+.link_list>ul>li{
+    list-style: none;
+    position: relative;
+}
+.link_list>ul>li:hover::after{
+    content: "";
+    width: 0%;
+    height: 3px;
+    left: 0;
+    bottom: -3px;
+    position: absolute;
+    animation: links_hover 0.3s alternate forwards ease-in-out;
+    background-color: var(--hovered_links);
+}
+
+@keyframes links_hover {
+    from{
+        width: 0%;
+    }
+    to{
+        width: 100%;
+    }
+}
+.toggler{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    cursor: pointer;
+}
+.menue{
+    display: none;
+}
+@media screen and (min-width: 200px) and (max-width: 500px){
+    .navbar{
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 0px;
+        padding-top: 5px;
+    }
+    .active{
+        border-bottom: 0px;
+        background-color: var(--small-dev-link-color-active);
+    }
+    .link_list{
+        width: 100%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .link_list>ul{
+        flex-direction: column;
+        width: 100%;
+        gap: 5px;
+    }
+    .link_list>ul>li{
+        width: 100%;
+        height: 50px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+    }
+    .link_list>ul>li>a{
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .link_list>ul>li:hover::after{
+        animation: none;
+    }
+    .link_list>ul>li:hover{
+        transform: none;
+    }
+    .menue{
+        display: block;
+        width: 40px;
+        height: 40px;
+        background-image: url(../../../public/menue_black.svg);
+        background-repeat: no-repeat;
+        background-position: center;
+        cursor: pointer;
+    }
+    .darkmode .menue{
+        background-image: url(../../../public/menue_white.svg);
+    }
+    .expand{
+        display: flex;
+    }
+    .expand ul>li{
+        animation: illusion 0.4s alternate forwards ease-in-out;
+    }
+    .retract{
+        display: none;
+    }
+    .retract >ul>li{
+        animation: illusion2 0.4s alternate forwards ease-in-out;
+    }
+    @keyframes illusion {
+        0%{
+            padding-top: inherit;
+        }
+        50%{
+            padding-top: 15px;
+        }
+        100%{
+            padding-top: 5px;
+        }
+    }
+    @keyframes illusion2 {
+        0%{
+            padding-top: 5px;
+        }
+        100%{
+            padding-top: 0px;
+        }
+    }
+}

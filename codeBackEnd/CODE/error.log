@@ -1,0 +1,13 @@
+[2024-06-25 23:49:30 +0100] [235190] [INFO] Starting gunicorn 22.0.0
+[2024-06-25 23:49:30 +0100] [235190] [INFO] Listening at: http://0.0.0.0:8000 (235190)
+[2024-06-25 23:49:30 +0100] [235190] [INFO] Using worker: eventlet
+[2024-06-25 23:49:30 +0100] [235191] [INFO] Booting worker with pid: 235191
+[2024-06-25 23:49:30 +0100] [235192] [INFO] Booting worker with pid: 235192
+[2024-06-25 23:49:30 +0100] [235193] [INFO] Booting worker with pid: 235193
+[2024-06-25 23:49:30 +0100] [235194] [INFO] Booting worker with pid: 235194
+[2024-06-26 00:26:42 +0100] [235190] [INFO] Handling signal: int
+[2024-06-25 23:26:43 +0000] [235192] [INFO] Worker exiting (pid: 235192)
+[2024-06-25 23:26:43 +0000] [235191] [INFO] Worker exiting (pid: 235191)
+[2024-06-25 23:26:43 +0000] [235193] [INFO] Worker exiting (pid: 235193)
+[2024-06-25 23:26:43 +0000] [235194] [INFO] Worker exiting (pid: 235194)
+[2024-06-26 00:26:43 +0100] [235190] [INFO] Shutting down: Master
