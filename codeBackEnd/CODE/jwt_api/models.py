@@ -90,6 +90,9 @@ class Users(models.Model):
 class Session(models.Model):
     session_id = models.BigAutoField(primary_key=True)
     session_status = models.BooleanField(default=True)
+    session_title = models.CharField(max_length=300, null=True)
+    session_topics = models.TextField(null=True)
+    session_task = models.TextField(null=True)
     session_start_time = models.DateTimeField(auto_now=True)
     session_end_time = models.DateTimeField(null=True)
     session_allowed_to_run_code = models.BooleanField(default=True)
@@ -109,34 +112,18 @@ class Session(models.Model):
             """
         )
 
-    def create(self, userInstance:Users):
+    def create(self, userInstance:Users, session_title:str, session_topics:str, session_task:str):
         """
         creating a session should create:
         + a new Session_correction_pool record
-        + a new Session_user_pool record
-        + a new Session_user_pool record
-        + a new Users_stats record
         """
-        # let's check if the user is admin
-        if not Users:
-            return None
         # create the objects
         try:
+            # create the session
             session_starter = userInstance
-            session = Session(session_starter=session_starter)
-            session_correction_pool = Session_correction_pool(
-                user_id_ref=session_starter,
-                session_id_ref=session)
-            session_user_pool = Session_user_pool(
-                user_id_ref=session_starter,
-                session_id_ref=session
-            ) 
-            users_stats = Users_stats(
-                session_user_pool_ref=session_user_pool,
-                user_id_ref=session_starter
-            )
+            session = Session(session_starter=session_starter, session_title=session_title, session_topics=session_topics, session_task=session_task)
         except Exception as e:
-            log.log_exception("error while running creating session models +++++>"+ e)
+            log.log_exception("error while running creating session models +++++>"+ str(e))
             return None
         # save using a transaction
         try:
@@ -146,9 +133,19 @@ class Session(models.Model):
                 session_user_pool.save()
                 users_stats.save()
         except Exception as e:
-            log.log_exception("error while executing transaction"+ e)
+            log.log_exception("error while executing transaction"+ str(e))
             return None
-            
+
+class Session_stat_tracking_record(models.Model):
+    session_stat_tracking_id = models.BigAutoField(primary_key=True)
+    session_stat_tracking_Session_Ref = models.ForeignKey(Session, on_delete=models.CASCADE)
+    session_stat_tracking_total_lines = models.IntegerField(default=0)
+    session_stat_tracking_id_errors =  models.IntegerField(default=0)
+    session_stat_tracking_id_active_studets = models.IntegerField(default=0)
+    session_stat_tracking_id_avg_code_comp = models.IntegerField(default=0)
+    session_stat_tracking_id_blocked_students = models.IntegerField(default=0)
+
+
 class Session_correction_pool(models.Model):
     session_correction_pool_id = models.BigAutoField(primary_key=True)
     correction = models.TextField(null=True)
@@ -156,6 +153,11 @@ class Session_correction_pool(models.Model):
     note = models.TextField(null=True)
     user_id_ref = models.ForeignKey(Users, on_delete=models.CASCADE)
     session_id_ref = models.ForeignKey(Session, on_delete=models.CASCADE)
+    
+    class META():
+        constraints = [
+            models.UniqueConstraint(fields=["user_id_ref", "session_id_ref"], name="unique combination1")
+        ]
     def __repr__(self):
         return (
             f"""
@@ -177,6 +179,11 @@ class Session_user_pool(models.Model):
     session_id_ref = models.ForeignKey(Session, on_delete=models.CASCADE)
     flaged = models.BooleanField(default=False)
     code_content = models.TextField(null= True)
+    
+    class META():
+        constraints = [
+            models.UniqueConstraint(fields=["user_id_ref", "session_id_ref"], name="unique combination2")
+        ]
     def __repr__(self):
         return (
             f"""
@@ -191,6 +198,30 @@ class Session_user_pool(models.Model):
             """
         )
 
+class Session_users_groupe(models.Model):
+    session_users_groupe = models.BigAutoField(primary_key=True)
+    session_users_groupe_name = models.CharField(max_length=200, unique=True)
+    session_users_groupe_creation_date = models.DateTimeField(auto_now=True)
+    session_users_groupe_creator = models.ForeignKey(Users, on_delete=models.CASCADE)
+    
+    def __repr__(self):
+        return (
+            f"""
+                                USERS_STATS
+            ----------------------------------------------------
+            session_users_groupe = {self.session_users_groupe}
+            session_users_groupe_name = {self.session_users_groupe_name}
+            session_users_groupe_creation_date = {self.session_users_groupe_creation_date}
+            session_users_groupe_creator = {self.session_users_groupe_creator}
+            ---------------------------------------------------
+            """
+        )
+
+class Session_users_groupe_refs(models.Model):
+    user_group_refs_id = models.BigAutoField(primary_key=True)
+    user_group_refs_users_groupe = models.ForeignKey(Session_users_groupe, on_delete=models.CASCADE)
+    user_group_refs_user_ref = models.ForeignKey(Users, on_delete=models.CASCADE)
+
 class Users_stats(models.Model):
     users_stats_id = models.BigAutoField(primary_key=True)
     session_user_pool_ref = models.ForeignKey(Session_user_pool, on_delete=models.CASCADE)
@@ -198,7 +229,12 @@ class Users_stats(models.Model):
     words_per_minute = models.IntegerField(default=0)
     lines_of_code = models.IntegerField(default=0)
     syntax_errors_number = models.IntegerField(default=0)
-    code_complexity = models.IntegerField(default=999)
+    code_complexity = models.IntegerField(default=0)
+
+    class META():
+        constraints = [
+            models.UniqueConstraint(fields=["user_id_ref", "session_user_pool_ref"], name="unique combination3")
+        ]
     def __repr__(self):
         return (
             f"""
@@ -256,5 +292,5 @@ class Refresh_tokens(models.Model):
             ).save()
             return obj
         except Exception as e:
-            log.log_exception("error creating refresh token  "+ e)
+            log.log_exception("error creating refresh token  "+ str(e))
         return False

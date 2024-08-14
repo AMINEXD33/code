@@ -3,7 +3,7 @@ from datetime import timedelta
 import json
 import hashlib
 from logs_util.log_core import LogCore
-
+import time
 log = LogCore("token_manager.py", False)
 
 
@@ -261,7 +261,7 @@ class Token_manager:
         """
         this function will validate the giving token , by checking the blacklist
         and then try and decrypt it, and finally checking the expiration date
-        Return: if the token is good (True), unvalid token (False)
+        Return: if the token is good (decrepted token), unvalid token (False)
         """
         # check if token is black listed
         if self.is_black_listed(token):
@@ -271,15 +271,27 @@ class Token_manager:
         try:
             dec_tok = json.loads(self.jwt_impl.decr_token(token).claims)
         except:
+            log.log_exception("can't decrept")
             return False
         # check if token is expired
         expiration_date_str = dec_tok["expiration_date"]
         current_date = datetime.datetime.now()
-        expiration_date_obj = datetime.datetime.strptime(
+        expiration_date_obj = None
+        try:
+            expiration_date_obj = datetime.datetime.strptime(
             expiration_date_str, "%Y/%m/%d %H:%M:%S"
-        )
+            )
+        except:
+            try:
+                expiration_date_obj = datetime.datetime.strptime(
+                expiration_date_str, "%Y-%m-%d %H:%M:%S"
+                )
+            except:
+                return False
+                
         if current_date >= expiration_date_obj:
             self.add_to_blacklist(token)
+            log.log_exception("expired tok")
             return False
 
         return dec_tok

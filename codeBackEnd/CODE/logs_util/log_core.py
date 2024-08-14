@@ -30,7 +30,8 @@ class LogCore:
 
     def writer(self, file_name: str, content: str):
         with open("logs_util/" + file_name, "a") as file:
-            file.write(content)
+            file.write(content+'\n')
+
 
     def log_exception(self, content: str):
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

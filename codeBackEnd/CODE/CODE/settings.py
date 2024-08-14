@@ -26,14 +26,16 @@ SECRET_KEY = 'django-insecure-!e&*ncs_@%_gg6o!8!*2d2rt-pl!a7+q-&3w4@pj%b6_&t%!8a
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'http://localhost:3000',
-    '*'
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "*"
 ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,20 +46,48 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_user_agents',
+    'channels',
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+ASGI_APPLICATION = "CODE.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+}
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
+CORS_ALLOW_CREDENTIALS = True 
+# Specify allowed methods
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+CORS_ALLOW_HEADERS = [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "refresh"
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
@@ -144,7 +174,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 USER_AGENTS_CACHE = 'default'
 
-CORS_ALLOW_CREDENTIALS = True
+
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = None
 

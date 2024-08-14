@@ -5,8 +5,8 @@ from jwt_api.models import Session_correction_pool
 from jwt_api.models import Session_user_pool
 from jwt_api.models import Users_stats
 from jwt_api.models import Session
-
-
+from jwt_api.models import Session_users_groupe
+from jwt_api.models import Session_users_groupe_refs
 class Role_serializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -37,6 +37,9 @@ class Session_serializer(serializers.ModelSerializer):
         fields = [
             'session_id',
             'session_status',
+            'session_title',
+            'session_topics',
+            'session_task',
             'session_start_time',
             'session_end_time',
             'session_allowed_to_run_code',
@@ -73,4 +76,14 @@ class Users_stats_serializer(serializers.ModelSerializer):
             'lines_of_code',
             'syntax_errors_number',
             'code_complexity'
+        ]
+
+class Session_users_groupe_serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session_users_groupe
+        fields = [
+            'session_users_groupe',
+            'session_users_groupe_name',
+            'session_users_groupe_creation_date',
+            'session_users_groupe_creator'
         ]

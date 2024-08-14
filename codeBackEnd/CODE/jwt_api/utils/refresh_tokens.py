@@ -124,7 +124,6 @@ class Refresh_tokens_manager:
         loaded_ison_format = token_isonformate_expdate
         if type(loaded_ison_format) == type(""):
             loaded_ison_format = datetime.datetime.fromisoformat(token_isonformate_expdate)
-
         if current_date > loaded_ison_format:
             Refresh_tokens_manager.remove_refresh_token_from_cach(Redis_conn, token)
             return False
