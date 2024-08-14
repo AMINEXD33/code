@@ -16,7 +16,7 @@ export function middleware(request) {
   if (cookie === undefined && pathname != "/login") {
     return NextResponse.redirect(new URL("/login", request.url));
   } else if (cookie !== undefined && pathname != "/private/dashboard") {
-    return NextResponse.redirect(new URL("/private/dashboard", request.url));
+    // return NextResponse.redirect(new URL("/private/dashboardstudents", request.url));
   }
   console.info("you're logged in");
   return NextResponse.next();

@@ -1,8 +1,6 @@
 "use client";
 import "./navbar.css";
 import { memo, useEffect, useRef, useState } from "react";
-import moon from "../../../public/dark_mode_moon.svg";
-import sun from "../../../public/light_mode_sun.svg";
 import dynamic from "next/dynamic";
 /**
  *
@@ -15,7 +13,7 @@ import dynamic from "next/dynamic";
  */
 function Navbar({ mode }) {
   const [menue_state, setMenueState] = useState(false);
-  const [theme, setTheme] = useState(["light", sun]);
+  const [theme, setTheme] = useState("light");
 
   // functions to controll if the navbar in view or not
   function set_nav_out(nvbar_address) {
@@ -47,7 +45,7 @@ function Navbar({ mode }) {
   }, []);
   // theme controller
   function toggle_theme() {
-    if (theme[0] === "light") {
+    if (theme === "light") {
       setTheme(["dark", moon]);
     } else {
       setTheme(["light", sun]);
@@ -55,7 +53,7 @@ function Navbar({ mode }) {
   }
   useEffect(() => {
     let body = document.getElementById("bod");
-    if (theme[0] === "light") {
+    if (theme === "light") {
       body.classList.remove("darkmode");
       localStorage.setItem("theme", "light");
     } else {
@@ -146,14 +144,6 @@ function Navbar({ mode }) {
           <ul>{nav_content}</ul>
         </div>
         <div className="toggler">
-          <Image
-            src={theme[1]}
-            alt="things"
-            width={30}
-            height={30}
-            priority
-            onClick={toggle_theme}
-          />
         </div>
         <div className="menue" onClick={trigger_menue}></div>
       </div>

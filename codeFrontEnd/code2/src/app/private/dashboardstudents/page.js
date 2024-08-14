@@ -3,15 +3,19 @@ import "./dashboard.css";
 import { Check_login } from "@/(components)/custom_hooks/UseJwtToken";
 import { useState, useRef, useEffect} from "react";
 import { Topdash } from "@/(components)/dashboard/dashboardTop/top";
-import DashboardOptions from "@/(components)/dashboard/dashboardOptions/dashboardOptions";
+import DashboardOptionsStudents from "@/(components)/dashboard/dashboardOptions/dashboardOptionsStudents";
 import { SessionStats } from "@/(components)/dashboard/sessionStats/sessionsStats";
+import { Socks } from "@/socket_logic/customSockets";
 import { useJwtToken } from "@/(components)/custom_hooks/UseJwtToken";
+import Stpicker from "@/(components)/studentsessionpicker/stpicker";
+
 function Dashboard() {
-  let token = useRef("");
+  let jwt = useRef(null); 
   // try and get the access token
-  useJwtToken(token)
+  useJwtToken(jwt);
+  let sockINstalce = null;
+
   let [contentPage, setContentPage] = useState(1);
-  let [selectedSessionId, setSelectedSessionId] = useState(null);
   const [theme, setTheme] = useState("light");
   function toggle_theme() {
     if (theme === "light") {
@@ -33,7 +37,10 @@ function Dashboard() {
     console.log("set body")
   }, [theme]);
 
-
+  useEffect(()=>{
+    sockINstalce = new Socks("ws://127.0.0.1:8000/ws/chat/", "your_valid_token", 2);
+    sockINstalce.queueAmessage("request", "adasdas", (d)=>{console.log(d)}, (r)=>{console.log(r)}, 10, true)
+  }, [])
   return (
     <>
       <div className="masterdiv">
@@ -43,10 +50,10 @@ function Dashboard() {
           </div>
         </div>
         <Topdash theme={theme} setTheme={setTheme}/>
-        <DashboardOptions currentPage={contentPage} setCurrentPage={setContentPage}/>
+        <DashboardOptionsStudents currentPage={contentPage} setCurrentPage={setContentPage}/>
         <div className="dashboard_content" id="CONTDIV">
-          {contentPage==1&& <SessionStats token={token} selectedSessionId={selectedSessionId} setSelectedSessionId={setSelectedSessionId} />}
-          {contentPage==2&& <h1>page2 with a selected {selectedSessionId}</h1>}
+          {contentPage==1&& <Stpicker/>}
+          {contentPage==2&& <h1>page2</h1>}
           {contentPage==3&& <h1>page3</h1>}
           {contentPage==4&& <h1>page4</h1>}
 

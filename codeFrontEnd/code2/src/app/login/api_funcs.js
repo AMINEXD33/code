@@ -1,7 +1,7 @@
 import axios from "axios";
-const END_POINT = "http://localhost:8000/api/login/";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { callLoginApi } from "@/(components)/api_caller/api_caller";
 
 /**
  * notnull:
@@ -37,7 +37,7 @@ function splite_date(dateString) {
   try {
     let ymd = matches[1].split("-");
     let hms = matches[2].split(":");
-    let date_obj = new Date(ymd[0], ymd[1], ymd[2], hms[0], hms[1], hms[2]);
+    let date_obj = Date.UTC(ymd[0], ymd[1] - 1, ymd[2], hms[0], hms[1], hms[2]);
     return date_obj;
   } catch (Exception) {
     console.log(Exception);
@@ -74,7 +74,16 @@ function log_user_in(
     let parsedJwtExpirationDate = splite_date(jwtExpirationDate);
     let parsedRefreshExpirationDate = splite_date(refreshExpiration);
     // set the cookie
-    Cookies.set("rf", refreshToken, { expires: parsedRefreshExpirationDate });
+    try {
+      Cookies.set("rf", refreshToken, {
+        expires: parsedRefreshExpirationDate,
+        sameSite: "None",
+        secure: true,
+      });
+      console.log("[!]cookie is set");
+    } catch (Exception) {
+      console.log("cookie set error = > ", Exception);
+    }
     console.log(parsedRefreshExpirationDate);
     return true;
   } catch {
@@ -91,7 +100,7 @@ function log_user_in(
 export async function login(username, password) {
   try {
     const response = await axios.post(
-      END_POINT,
+      callLoginApi(),
       {
         username: username,
         password: password,

@@ -1,7 +1,4 @@
-@font-face {
-    font-family: chakra;
-    src: url("../../../public/Chakra_Petch/ChakraPetch-Medium.ttf");
-}
+
 .container{
     display: flex;
     align-items: center;

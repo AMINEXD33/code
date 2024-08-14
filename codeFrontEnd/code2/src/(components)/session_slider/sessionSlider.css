@@ -1,0 +1,183 @@
+.sessions_slider{
+    width: 90%;
+    height: 40px;
+    background-color: var(--session_slider);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    padding: 10px;
+    border-radius: 20px;
+    display: none;
+}
+.sessions_slider_place_holder{
+    width: 90%;
+    height: 60px;
+    background: var(--session_holder_gradiat);
+    animation: gradiant_animation 1s linear forwards infinite;
+    background-size: 400% 400%;
+    border-radius: 20px;
+    filter: blur(5px);
+}
+@keyframes gradiant_animation {
+	0% {
+		background-position: 400% 0%;
+	}
+	/* 50% {
+		background-position: 100% 50%;
+	} */
+	100% {
+		background-position: -400% 100;
+	} 
+}
+.sessions_shower{
+    position: absolute;
+    top: 100%;
+    left:0;
+    height: fit-content;
+    width: 100%;
+    padding: 10px;
+    background-color: var(--divs_colors);
+    z-index: 2;
+    border-radius: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    
+}
+.active_session_shower{
+    animation:  active_sessions_shower 1s alternate forwards ease-in-out;
+}
+.inactive_session_shower{
+    animation:  inactive_sessions_shower 1s alternate forwards ease-in-out;
+}
+@keyframes active_sessions_shower {
+    from{
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+@keyframes inactive_sessions_shower {
+    0%{
+
+        transform: translateY(0px);
+    }
+    50%{
+        opacity: 0.4;
+    }
+    100%{
+        transform: translateY(-10px);
+        opacity: 0.1;
+    }
+    
+}
+.arrow_down_icon{
+    height: 30px;
+    width: 30px;
+    background-image: var(--arrow_down);
+    background-position: center;
+    background-repeat: no-repeat;
+    rotate: 180deg;
+}
+.arrow_active{
+    animation: active_arrow 0.4s alternate forwards ease-in-out;
+}
+.arrow_inactive{
+    animation: inactive_arrow 0.4s alternate forwards ease-in-out;
+}
+@keyframes inactive_arrow{
+    from{
+        rotate: 0deg;
+    }
+    to{
+        rotate: 180deg;
+    }
+}
+@keyframes active_arrow {
+    from{
+        rotate: 180deg;
+    }
+    to{
+        rotate: 0deg;
+    }
+}
+.sessions_shower_headers, .session_cell{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    height: 40px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.sessions_shower_headers{
+    background-color:  var(--divs_colors);;
+    border-radius: 10px;
+}
+.sessionsalivetable{
+    width: 100%;
+    height: fit-content;
+    border: 0px;
+    margin: 0px;
+}
+.sessionsalivetable>tbody>tr{
+    text-align: center;
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.sessionsalivetable>tbody>tr{
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+}
+.sessionsalivetable>tbody>tr:hover{
+    animation: identifier 0.3s alternate forwards ease-in-out;
+}
+.sessionsalivetable>tr:nth-child(1):hover{
+    animation: none;
+}
+@keyframes identifier {
+    from{
+        background-color: initial;
+    }
+    to{
+        background-color: var(--small-dev-link-color-active);
+    }
+}
+.add_new_session{
+    width: 30px;
+    height: 30px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    background-image: url(../../../public/add_dark.svg);
+    border-radius: 10px;
+    padding: 10px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+.add_new_session:hover{
+    animation: color_change_addnewsession 0.5s alternate forwards ease-in-out ;
+}
+@keyframes color_change_addnewsession {
+    from{
+        background-color: initial;
+    }
+    to{
+        background-color: var(--small-dev-link-color-active);
+    }
+    
+}
+.darkmode .add_new_session{
+    background-image: url(../../../public/add.svg);
+}
+.addsessionbox{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+}
