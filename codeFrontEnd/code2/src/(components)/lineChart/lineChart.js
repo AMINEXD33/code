@@ -11,7 +11,7 @@ function simulate_incoming_data() {
     };
 }
 
-export function LineChartCustom() {
+export function LineChartCustom({InjectableForLoggin}) {
     const [data, setData] = useState([]);
 
     useEffect(() => {

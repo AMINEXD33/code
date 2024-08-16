@@ -46,7 +46,7 @@ function getRandomData() {
         data
     )
 }
-export function UpdatableDonut() {
+export function UpdatableDonut({InjectableForLoggin}) {
     let [data, setData] = useState(getRandomData());
     let [renderGraph, setrenderGraph] = useState(false);
     let thisChart = useRef(null);

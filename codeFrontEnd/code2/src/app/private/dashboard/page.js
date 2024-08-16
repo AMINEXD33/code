@@ -6,7 +6,9 @@ import { Topdash } from "@/(components)/dashboard/dashboardTop/top";
 import DashboardOptions from "@/(components)/dashboard/dashboardOptions/dashboardOptions";
 import { SessionStats } from "@/(components)/dashboard/sessionStats/sessionsStats";
 import { useJwtToken } from "@/(components)/custom_hooks/UseJwtToken";
+import { Logger } from "../../../(components)/message_display/meassage_display_manager";
 function Dashboard() {
+  let InjectableForLoggin = useRef(null);
   let token = useRef("");
   // try and get the access token
   useJwtToken(token)
@@ -33,19 +35,18 @@ function Dashboard() {
     console.log("set body")
   }, [theme]);
 
-
   return (
     <>
-      <div className="masterdiv">
+      <div className="masterdiv" ref={InjectableForLoggin}>
         <div className="look_settings">
           <div className="" onClick={()=>{toggle_theme()}}>
             change_theme
           </div>
         </div>
-        <Topdash theme={theme} setTheme={setTheme}/>
-        <DashboardOptions currentPage={contentPage} setCurrentPage={setContentPage}/>
+        <Topdash theme={theme} setTheme={setTheme} InjectableForLoggin={InjectableForLoggin}/>
+        <DashboardOptions currentPage={contentPage} setCurrentPage={setContentPage} InjectableForLoggin={InjectableForLoggin}/>
         <div className="dashboard_content" id="CONTDIV">
-          {contentPage==1&& <SessionStats token={token} selectedSessionId={selectedSessionId} setSelectedSessionId={setSelectedSessionId} />}
+          {contentPage==1&& <SessionStats InjectableForLoggin={InjectableForLoggin} token={token} selectedSessionId={selectedSessionId} setSelectedSessionId={setSelectedSessionId} />}
           {contentPage==2&& <h1>page2 with a selected {selectedSessionId}</h1>}
           {contentPage==3&& <h1>page3</h1>}
           {contentPage==4&& <h1>page4</h1>}

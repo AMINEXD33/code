@@ -6,4 +6,5 @@ from django.urls import path
 
 websocket_urlpatterns = [
     re_path(r'ws/chat/$', consumers.ChatConsumer.as_asgi()),
+    re_path(r'ws/metricksManagment/$',consumers.track_stats.as_asgi())
 ]

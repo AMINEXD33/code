@@ -287,6 +287,7 @@ class Token_manager:
                 expiration_date_str, "%Y-%m-%d %H:%M:%S"
                 )
             except:
+                log.log_exception("WTF IS THAT DATE")
                 return False
                 
         if current_date >= expiration_date_obj:

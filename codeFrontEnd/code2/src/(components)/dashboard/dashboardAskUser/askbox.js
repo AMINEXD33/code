@@ -22,7 +22,7 @@ function closeAskbox(setAddSession)
     setAddSession(false);
 }
 
-export default function Askbox({children, width=200, height=400, setAddSession})
+export default function Askbox({children, width=200, height=400, setAddSession, InjectableForLoggin})
 {
     let askboxRef = useRef(null);
     let tempmaskRef = useRef(null);

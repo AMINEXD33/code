@@ -24,3 +24,7 @@ export function callGetGroups()
 {
   return "http://127.0.0.1:8000/api/getallgroups/";
 }
+export function callGetGroupsGetLangues()
+{
+  return "http://127.0.0.1:8000/api/getallgroupsandlangages/";
+}

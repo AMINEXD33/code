@@ -7,12 +7,36 @@ from jwt_api.models import Users_stats
 from jwt_api.models import Session
 from jwt_api.models import Session_users_groupe
 from jwt_api.models import Session_users_groupe_refs
+from jwt_api.models import Languages
+# from jwt_api.models import sessionMetricsHardRecord
 class Role_serializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = [
         'role_id',
         'role_name',
+        ]
+
+    
+# class sessionMetricsHardRecord_serializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = sessionMetricsHardRecord
+#         field = [
+#             "sessionMetric_id",
+#             "sessionMetric_total_students",
+#             "sessionMEtric_students_done",
+#             "sessionMetric_totallines",
+#             "sessionMetric_totalerrors",
+#             "sessionMetric_blockedstudents",
+#             "sessionMetric_avgCodeComplexity",
+#             "sessionMetric_totalwordswriten"
+#         ]
+class Languages_serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Languages
+        fields=[
+            'languages_id',
+            'languages_name'
         ]
 
 class Users_serializer(serializers.ModelSerializer):

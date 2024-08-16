@@ -12,7 +12,7 @@ function routine(rbmet_holder, tbmet)
     // on wait
 }
 
-export default function Tbmetrics({})
+export default function Tbmetrics({InjectableForLoggin})
 {
     let rbmet_holder = useRef(null);
     let tbmet = useRef(null);
@@ -27,6 +27,10 @@ export default function Tbmetrics({})
             <div className="tbmetrics" ref={tbmet}>
                 <table id="tbmet">
                     <tbody>
+                        <tr>
+                            <th>total students</th>
+                            <td>124</td>
+                        </tr>
                         <tr>
                             <th>total lines</th>
                             <td>124</td>

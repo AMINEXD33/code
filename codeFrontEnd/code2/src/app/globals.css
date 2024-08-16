@@ -49,6 +49,7 @@ body {
     --yes:rgba(82, 142, 255, 0.514);
     --add:rgba(0, 128, 0, 0.479);
     --table_border: rgba(0, 0, 0, 0.26);
+    --ships:rgba(147, 233, 255, 0.308);
 }
 
 .darkmode {
@@ -118,3 +119,64 @@ a {
     height: auto;
 }
 
+
+.msg, .error, .info, .recom{
+    width: 100%;
+    min-height: 60px;
+    padding: 5px;
+    font-size: large;
+    font-weight: bold;
+    display: flex;
+    flex-wrap: wrap;
+    position: absolute;
+    left: 0;
+    right: 0;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    opacity: 0;
+    animation:  error_display 1s forwards ease-out alternate,
+    error_hide 1s 6s forwards ease-out alternate;
+    color: whitesmoke;
+    z-index: 5;
+    margin-bottom: 5px;
+}
+
+/*msgs colors*/
+.msg{background-color: rgba(151, 255, 103);}
+.error{background-color: rgba(255, 0, 0);}
+.info{background-color: rgba(0, 66, 141);}
+.recom{background-color: rgba(136, 136, 0);}
+@keyframes error_display {
+    from{
+        transform: translateY(-10px);
+    }
+    50%{
+        transform: translateY(0px);
+    }
+    100%{
+        opacity: 1;
+    }
+    
+}
+@keyframes error_hide {
+    from{
+        transform: translateY(0px);
+    }
+    50%{
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    100%{
+        opacity: 0;
+        transform: translateY(-10px);
+        display: none;
+    }
+    
+}
+@media screen and (min-width:200px) and (max-width:500px) {
+    .msg, .error, .info, .recom{
+        font-size: small;
+        padding: 10px;
+    }
+}

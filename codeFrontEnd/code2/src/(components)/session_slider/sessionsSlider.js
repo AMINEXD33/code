@@ -4,6 +4,9 @@ import Askbox from "../dashboard/dashboardAskUser/askbox";
 import Sessionform from "../create_session_form/sessionForm";
 import axios, { Axios } from "axios";
 import { callGetActiveSessions } from "@/(components)/api_caller/api_caller";
+import Logger from "../message_display/meassage_display_manager";
+var loggerInjectable;
+var logger;
 // functions to handle the state of the shower
 /**
  * this function animate the arrow icon
@@ -67,7 +70,7 @@ function addSesssion(addSession, setAddSession) {
 }
 
 function makeAsessionCell(sessionTitle, sessionGroup, sessionStartDate, sessionEndDate) {
-    let tr = document.createElement("tr"); 
+    let tr = document.createElement("tr");
     let content = `
     <tr>
         <td>${sessionTitle}</td>
@@ -87,14 +90,13 @@ var SessionPickeventListiners = [];
  * @param {*} sessionHolder a reffrence to the place holder for sessionSlider
  */
 function loadData(data, sessionSlider, sessionHolder, token, setSelectedSessionId, tbodyRef) {
-    
+
     if (token.current.length > 0) {
         axios.post(callGetActiveSessions(), { "data": { "JWT": token.current } })
             .then(response => {
                 let data = response.data["data"];
                 let docFrag = document.createDocumentFragment();
-                for (let index=0; index < data.length; index++)
-                {
+                for (let index = 0; index < data.length; index++) {
                     let sessioniD = data[index]["session_id"];
                     let title = data[index]["session_title"];
                     let group = data[index]["session_title"];
@@ -102,23 +104,27 @@ function loadData(data, sessionSlider, sessionHolder, token, setSelectedSessionI
                     let endDate = data[index]["session_start_time"];
                     let cell = makeAsessionCell(title, group, startDate, endDate);
                     console.log(cell);
-                    let evListener = cell.addEventListener("click",()=>{
+                    let evListener = cell.addEventListener("click", () => {
                         setSelectedSessionId(sessioniD);
-                        for (let x =0; x< SessionPickeventListiners.length; x++)
-                        {
+                        for (let x = 0; x < SessionPickeventListiners.length; x++) {
                             removeEventListener("click", SessionPickeventListiners[index]);
                         }
                     });
                     SessionPickeventListiners.push(evListener);
                     console.log(cell);
-                    console.log("heeeeere",tbodyRef.current)
+                    console.log("heeeeere", tbodyRef.current)
                     docFrag.appendChild(cell)
                 }
                 tbodyRef.current.appendChild(docFrag);
             })
             .catch(error => {
                 // log the error and that's it for now
-                console.error(error);
+                if (error.response) {
+                    logger.error(loggerInjectable, error.response.data);
+                }
+                else{
+                    logger.error(loggerInjectable, "error fetching sessions from the server");
+                }
             })
             .finally(() => {
                 sessionHolder.style.display = "none";
@@ -135,7 +141,9 @@ function loadData(data, sessionSlider, sessionHolder, token, setSelectedSessionI
 }
 
 
-export function SessionSlider({ dataLoadedFlag, data, token, selectedSessionId, setSelectedSessionId}) {
+export function SessionSlider({ dataLoadedFlag, data, token, selectedSessionId, setSelectedSessionId, InjectableForLoggin }) {
+    loggerInjectable = InjectableForLoggin;
+    logger = new Logger();
     let selectedSession = useRef('None');
     let sessionsShower = useRef(null);
     let arrowIcon = useRef(null);
@@ -172,7 +180,7 @@ export function SessionSlider({ dataLoadedFlag, data, token, selectedSessionId, 
                                 <td>DEV102</td>
                                 <td>2024/12/12</td>
                             </tr> */}
-                        
+
                         </tbody>
                     </table>
                 </div>
@@ -182,12 +190,13 @@ export function SessionSlider({ dataLoadedFlag, data, token, selectedSessionId, 
             {addSession == true &&
 
                 <Askbox
-                    width={500}
-                    height={500}
+                    width={300}
+                    height={800}
                     setAddSession={setAddSession}
+                    InjectableForLoggin={InjectableForLoggin}
                 >
                     <div className="addsessionbox">
-                        <Sessionform token={token}/>
+                        <Sessionform InjectableForLoggin={InjectableForLoggin} token={token} />
                     </div>
                 </Askbox>
 

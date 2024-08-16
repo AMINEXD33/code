@@ -1,0 +1,40 @@
+
+.msg, .error, .info, .recom{
+    width: 100%;
+    margin-left: 5vw;
+    margin-right: 5vw;
+    font-size: large;
+    font-weight: bold;
+    display: flex;
+    flex-wrap: wrap;
+    
+}
+
+/*msgs colors*/
+.msg{background-color: rgba(151, 255, 103, 0.438);}
+.error{background-color: rgba(255, 0, 0, 0.377);}
+.info{background-color: rgba(0, 66, 141, 0.589);}
+.recom{background-color: rgba(136, 136, 0, 0.5);}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

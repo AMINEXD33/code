@@ -24,6 +24,20 @@ class Role(models.Model):
             """
         )
 
+class Languages(models.Model):
+    languages_id = models.BigAutoField(primary_key=True)
+    languages_name = models.CharField(max_length=100, null=False)
+    def __repr__(self):
+        return(
+            f"""
+                            languages
+            -----------------------------------------
+            language_id = {self.language_id}
+            language_name = {self.language_name}
+            -----------------------------------------
+            """
+        )
+
 class Users(models.Model):
     user_id = models.CharField(max_length=36, primary_key=True)
     user_username = models.CharField(max_length=100, null=False, unique=True)
@@ -87,16 +101,37 @@ class Users(models.Model):
             img_src = img_src
         ).save()
 
+class Session_users_groupe(models.Model):
+    session_users_groupe = models.BigAutoField(primary_key=True)
+    session_users_groupe_name = models.CharField(max_length=200, unique=True)
+    session_users_groupe_creation_date = models.DateTimeField(auto_now=True)
+    session_users_groupe_creator = models.ForeignKey(Users, on_delete=models.CASCADE)
+    
+    def __repr__(self):
+        return (
+            f"""
+                                USERS_STATS
+            ----------------------------------------------------
+            session_users_groupe = {self.session_users_groupe}
+            session_users_groupe_name = {self.session_users_groupe_name}
+            session_users_groupe_creation_date = {self.session_users_groupe_creation_date}
+            session_users_groupe_creator = {self.session_users_groupe_creator}
+            ---------------------------------------------------
+            """
+        )
+
 class Session(models.Model):
     session_id = models.BigAutoField(primary_key=True)
     session_status = models.BooleanField(default=True)
-    session_title = models.CharField(max_length=300, null=True)
+    session_title = models.CharField(max_length=200, null=False, unique=True)
     session_topics = models.TextField(null=True)
     session_task = models.TextField(null=True)
     session_start_time = models.DateTimeField(auto_now=True)
     session_end_time = models.DateTimeField(null=True)
     session_allowed_to_run_code = models.BooleanField(default=True)
     session_starter = models.ForeignKey(Users, on_delete=models.CASCADE)
+    session_target_group = models.ForeignKey(Session_users_groupe, null=False,on_delete=models.CASCADE)
+    session_language_ref = models.ForeignKey(Languages,on_delete=models.CASCADE)
     def __repr__(self):
         return (
             f"""
@@ -108,33 +143,10 @@ class Session(models.Model):
             session_end_time = {self.session_end_time}
             session_allowed_to_run_code = {self.session_allowed_to_run_code}
             session_starter = {self.session_starter}
+            session_language_ref = {self.session_language_ref}
             -----------------------------------------
             """
         )
-
-    def create(self, userInstance:Users, session_title:str, session_topics:str, session_task:str):
-        """
-        creating a session should create:
-        + a new Session_correction_pool record
-        """
-        # create the objects
-        try:
-            # create the session
-            session_starter = userInstance
-            session = Session(session_starter=session_starter, session_title=session_title, session_topics=session_topics, session_task=session_task)
-        except Exception as e:
-            log.log_exception("error while running creating session models +++++>"+ str(e))
-            return None
-        # save using a transaction
-        try:
-            with transaction.atomic():
-                session.save()
-                session_correction_pool.save()
-                session_user_pool.save()
-                users_stats.save()
-        except Exception as e:
-            log.log_exception("error while executing transaction"+ str(e))
-            return None
 
 class Session_stat_tracking_record(models.Model):
     session_stat_tracking_id = models.BigAutoField(primary_key=True)
@@ -198,24 +210,6 @@ class Session_user_pool(models.Model):
             """
         )
 
-class Session_users_groupe(models.Model):
-    session_users_groupe = models.BigAutoField(primary_key=True)
-    session_users_groupe_name = models.CharField(max_length=200, unique=True)
-    session_users_groupe_creation_date = models.DateTimeField(auto_now=True)
-    session_users_groupe_creator = models.ForeignKey(Users, on_delete=models.CASCADE)
-    
-    def __repr__(self):
-        return (
-            f"""
-                                USERS_STATS
-            ----------------------------------------------------
-            session_users_groupe = {self.session_users_groupe}
-            session_users_groupe_name = {self.session_users_groupe_name}
-            session_users_groupe_creation_date = {self.session_users_groupe_creation_date}
-            session_users_groupe_creator = {self.session_users_groupe_creator}
-            ---------------------------------------------------
-            """
-        )
 
 class Session_users_groupe_refs(models.Model):
     user_group_refs_id = models.BigAutoField(primary_key=True)
@@ -294,3 +288,19 @@ class Refresh_tokens(models.Model):
         except Exception as e:
             log.log_exception("error creating refresh token  "+ str(e))
         return False
+
+
+class sessionMetricsHardRecord(models.Model):
+    sessionMetric_id = models.BigAutoField(primary_key=True)
+
+    sessionMetric_total_students = models.IntegerField(default=0)
+    sessionMEtric_students_done = models.IntegerField(default=0)
+    sessionMetric_totallines = models.IntegerField(default=0)
+    sessionMetric_totalerrors = models.IntegerField(default=0)
+    sessionMetric_blockedstudents = models.IntegerField(default=0)
+    sessionMetric_avgCodeComplexity = models.IntegerField(default=0)
+    sessionMetric_totalwordswriten = models.IntegerField(default=0)
+    sessionMetric_SessionRef = models.OneToOneField(Session, on_delete=models.CASCADE)
+
+
+

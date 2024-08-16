@@ -2,8 +2,16 @@ from django.contrib.auth.models import Group, User
 from rest_framework import permissions, viewsets
 from django.apps import apps
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponseServerError
+from django.http import (
+    JsonResponse,
+    HttpResponseForbidden,
+    HttpResponseServerError,
+    HttpResponseBadRequest,
+    HttpResponse,
+)
 import json, time
+from datetime import timedelta
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from jwt_api.models import *
@@ -15,10 +23,23 @@ from django.db import transaction
 from django.db.utils import IntegrityError, DatabaseError
 from logs_util.log_core import LogCore
 from jwt_api.serializers import *
-
+from django.db import transaction
+from django.core.exceptions import ValidationError
 
 reference = apps.get_app_config("jwt_api").my_object
 # Create your views here.
+
+
+def removeSpaces(some_str: str):
+    """
+    this function removes every sigle space in a string
+    """
+    txt = ""
+    for letter in some_str:
+        if letter != " ":
+            txt += letter
+    return txt
+
 
 def allow_(jwt_encrypted_token, authority="user"):
     """
@@ -28,22 +49,31 @@ def allow_(jwt_encrypted_token, authority="user"):
         2. admin
         3. superadmin
     """
+    s = LogCore("views.py", False)
     try:
+        print(jwt_encrypted_token)
+        print("decrepting .....")
         flag = reference.TokenManager.abstract_token_validation(jwt_encrypted_token)
-        if flag is False: return False
+        print("out ...")
+        print(flag)
+        if flag is False:
+            return False
 
         # the flag contains the decrypted jwt now
-        role:str = flag["role"]
+        role: str = flag.get("role")
+        print(role)
         # retrurn fals if no role was in the jwt , how ? idk but we're preping for the end of the world here :)
-        if not role: return False
+        if not role:
+            return False
         # if authorized
         if role == authority:
             return flag
-        
+
         return False
     except Exception as e:
-        print("from allow_()"+str(e))
+        s.log_exception(str(e))
         return False
+
 
 def hash_password(password: str):
     salt = bcrypt.gensalt()
@@ -65,7 +95,7 @@ def get_refresh_token_http_header(request):
         return None
 
 
-def get_body_from_request(request):
+def get_body_from_request(request) -> dict | None:
     try:
         data = json.loads(request.body.decode("utf-8"))
         return data
@@ -152,8 +182,10 @@ def login(request):
         return result
 
     username, password = get_initial_data()
-    cached_token, expiration_date = reference.TokenManager.abstract_token_validation_get_reqs(username)
-    
+    cached_token, expiration_date = (
+        reference.TokenManager.abstract_token_validation_get_reqs(username)
+    )
+
     # if it's cached and the refresh token is valid
     if cached_token is not False:
         if cached_token.get(
@@ -536,6 +568,7 @@ def refresh(request):
     print("not a valid refresh token")
     return unauthorized
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def get_dec(request):
@@ -565,33 +598,143 @@ def get_dec(request):
 
     return JsonResponse({"ok": decrepted_token})
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def create_session(request):
     s = LogCore("views.py", False)
     try:
-        body:dict = get_body_from_request(request)
-        # flag = allow_(body["data"]["JWT"], authority="admin")
-        print(body)
-        return JsonResponse({"data": body})
-    
-    
-    except Exception as e:
-        s.log_exception("from get_all_active_sessions"+str(e))
-        return HttpResponseServerError
+        body: dict = get_body_from_request(request)
+        print(type(body))
+        flag = allow_(body["data"]["JWT"], authority="admin")
+        if not flag:
+            return HttpResponseForbidden()
+        # see if the request respects some logic
+        allowed_to_run_code = body["data"]["allowru"]
+        duration_of_the_session = body["data"]["duration"]
+        target_group = body["data"]["group"]
+        title = body["data"]["title"]
+        task = body["data"]["task"]
+        topics = body["data"]["topics"]
+        lang_target = body["data"]["langue"]
 
-    return JsonResponse({"data": "ok"})
+        # duration can't be more than 10hours or smaller than 0.5hour
+        if duration_of_the_session > 10:
+            return HttpResponseBadRequest("duration can't be that long")
+
+        if duration_of_the_session < 0.5:
+            return HttpResponseBadRequest("duration can't be that short")
+
+        # all inputs needs to be at least one character
+        for x in [[title, "title"], [task, "task"], [topics, "topics"]]:
+            if len(x[0]) == 0:
+                return HttpResponseBadRequest(f"field {x[1]} is too short")
+
+        # calculate the ending time
+        session_ends_time = datetime.datetime.now() + timedelta(
+            hours=duration_of_the_session
+        )
+        session_ends_time = timezone.make_aware(session_ends_time)
+        current_time = timezone.make_aware(datetime.datetime.now())
+
+        if session_ends_time <= current_time:
+            return HttpResponseBadRequest("bad session duration")
+
+        # does the lang exist
+        lang = Languages.objects.filter(languages_id=lang_target).first()
+        if not lang:
+            return HttpResponseBadRequest("no language with that name")
+
+        # find an appropriat group
+        group_object = Session_users_groupe.objects.filter(
+            session_users_groupe=target_group
+        ).first()
+        if not group_object:
+            return HttpResponseBadRequest("no groupe with that name")
+
+        # needs to have a valid user
+        user = Users.objects.filter(user_id=flag["id"]).first()
+        if not user:
+            return HttpResponseBadRequest("who are yaaa bradaaa?")
+
+        # record the session
+        new_session = None
+        new_metricRecord = None
+
+        students_count = Session_users_groupe_refs.objects.filter(
+            user_group_refs_users_groupe=group_object
+        ).count()
+
+        does_have_session = Session.objects.filter(
+            session_starter=user, session_status=True
+        ).all()
+        print(len(does_have_session))
+        if len(does_have_session) >= 5:
+            return HttpResponseBadRequest(
+                "you've reached the maximum number of session allowed, delete some , or wait for them to  finish"
+            )
+        for session in does_have_session:
+            if removeSpaces(session.session_title) == removeSpaces(title):
+                return HttpResponseBadRequest(
+                    "you can't have two sessions with the same title"
+                )
+
+        new_session = Session(
+            session_status=True,
+            session_title=title,
+            session_starter=user,
+            session_topics=topics,
+            session_task=task,
+            session_allowed_to_run_code=allowed_to_run_code,
+            session_target_group=group_object,
+            session_end_time=session_ends_time,
+            session_language_ref=lang,
+        )
+        new_metricRecord = sessionMetricsHardRecord(
+            sessionMetric_total_students=students_count,
+            sessionMetric_SessionRef=new_session,
+        )
+
+        # commit the two records as a transaction
+        with transaction.atomic():
+            new_session.save()
+            new_metricRecord.save()
+
+        print(
+            f"""
+        allowed to run = {allowed_to_run_code} [{type(allowed_to_run_code)}]
+        duration = {duration_of_the_session} [{type(duration_of_the_session)}]
+        target group = {target_group} [{type(target_group)}]
+        title = {title} [{type(title)}]
+        task = {task} [{type(task)}]
+        topics = {topics} [{type(topics)}]
+        """
+        )
+
+        print("OKO")
+        return JsonResponse({"msg": "session was created successfully"})
+
+    except ValidationError as e:
+        if "Duplicate entry" in e.message_dict or "Duplicate" in e.message_dict:
+            log.log_exception("can't commit with a duplicated data" + str(e))
+            return HttpResponseBadRequest("can't commit with a duplicated data")
+
+    except Exception as e:
+        s.log_exception("from get_all_active_sessions" + str(e))
+        return HttpResponseServerError("can't create the session")
+
 
 @require_http_methods(["POST"])
 @csrf_exempt
 def test_token(request):
-    body:dict = get_body_from_request(request)
+    body: dict = get_body_from_request(request)
     s = LogCore("views.py", True)
-    isvalid:bool|str = reference.TokenManager.abstract_token_validation(body["data"]['JWT'])
+    isvalid: bool | str = reference.TokenManager.abstract_token_validation(
+        body["data"]["JWT"]
+    )
     if not isvalid:
-        return (JsonResponse({"response": False}))
-    return (JsonResponse({"response": True}))
-
+        return JsonResponse({"response": False})
+    return JsonResponse({"response": True})
 
 
 @require_http_methods(["POST"])
@@ -600,20 +743,20 @@ def get_all_active_sessions(request):
     s = LogCore("views.py", False)
     data = []
     try:
-        body:dict = get_body_from_request(request)
+        body: dict = get_body_from_request(request)
         flag = allow_(body["data"]["JWT"], authority="admin")
 
         print(type(flag))
         print(flag)
-        id:str = flag["id"]
+        id: str = flag["id"]
         print("we're lokking for the id = ", id)
         if not id:
             return HttpResponseServerError("can't get the id from the token!")
         sessions = Session.objects.filter(session_starter=id).all()
-        for session in sessions:           
+        for session in sessions:
             data.append(Session_serializer(session).data)
     except Exception as e:
-        s.log_exception("from get_all_active_sessions"+str(e))
+        s.log_exception("from get_all_active_sessions" + str(e))
         return HttpResponseServerError
 
     return JsonResponse({"data": data})
@@ -625,18 +768,44 @@ def get_all_groups(request):
     s = LogCore("views.py", False)
     data = []
     try:
-        body:dict = get_body_from_request(request)
+        body: dict = get_body_from_request(request)
         flag = allow_(body["data"]["JWT"], authority="admin")
 
-        id:str = flag["id"]
+        id: str = flag["id"]
         print("we're lokking for the id = ", id)
         if not id:
             return HttpResponseServerError("can't get the id from the token!")
         groups = Session_users_groupe.objects.all()
-        for group in groups:           
+        for group in groups:
             data.append(Session_users_groupe_serializer(group).data)
     except Exception as e:
-        s.log_exception("from get_all_active_sessions"+str(e))
-        return HttpResponseServerError
+        s.log_exception("from get_all_active_sessions" + str(e))
+        return HttpResponseServerError()
 
     return JsonResponse({"data": data})
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def get_all_groups_and_langages(request):
+    s = LogCore("views.py", False)
+    groups_list = []
+    langs_list = []
+    try:
+        body: dict = get_body_from_request(request)
+        flag = allow_(body["data"]["JWT"], authority="admin")
+        id: str = flag["id"]
+        print("we're lokking for the id = ", id)
+        if not id:
+            return HttpResponseServerError("can't get the id from the token!")
+        groups = Session_users_groupe.objects.all()
+        for group in groups:
+            groups_list.append(Session_users_groupe_serializer(group).data)
+        languages = Languages.objects.all()
+        for language in languages:
+            langs_list.append(Languages_serializer(language).data)
+    except Exception as e:
+        s.log_exception("from get_all_active_sessions" + str(e))
+        return HttpResponseServerError()
+
+    return JsonResponse({"data": {"groups": groups_list, "languages": langs_list}})

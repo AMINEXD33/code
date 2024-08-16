@@ -54,7 +54,7 @@ function figurePage(currPage, setCurrPage, clickedpage, me, optionsList) {
     console.log("no need to switch");
   }
 }
-export default function DashboardOptionsStudents({ currentPage, setCurrentPage }) {
+export default function DashboardOptionsStudents({ currentPage, setCurrentPage , InjectableForLoggin}) {
   let optionsList = [useRef(null), useRef(null), useRef(null)];
   
   // just set the first option as active on first mount
