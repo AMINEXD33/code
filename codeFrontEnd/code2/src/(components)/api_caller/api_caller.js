@@ -1,30 +1,46 @@
 export function callSessiondata() {
-  return "http://127.0.0.1:8000/api/sessiondata/";
+  return "http://192.168.1.9:4000/api/sessiondata/";
 }
 export function callLoginApi() {
-  return "http://127.0.0.1:8000/api/login/";
+  return "http://192.168.1.9:4000/api/login/";
 }
 export function callRefreshApi()
 {
-  return "http://127.0.0.1:8000/api/refresh/";
+  return "http://192.168.1.9:4000/api/refresh/";
 }
 export function callTestReq()
 {
-  return "http://127.0.0.1:8000/api/test/";
+  return "http://192.168.1.9:4000/api/test/";
 }
 export function callGetActiveSessions()
 {
-  return "http://127.0.0.1:8000/api/getactivesessions/";
+  return "http://192.168.1.9:4000/api/getactivesessions/";
+}
+export function callGetActiveSessionsStudents()
+{
+  return "http://192.168.1.9:4000/api/getallsessionsstudents/";
 }
 export function callCreateSession()
 {
-  return "http://127.0.0.1:8000/api/makesession/";
+  return "http://192.168.1.9:4000/api/makesession/";
 }
 export function callGetGroups()
 {
-  return "http://127.0.0.1:8000/api/getallgroups/";
+  return "http://192.168.1.9:4000/api/getallgroups/";
 }
 export function callGetGroupsGetLangues()
 {
-  return "http://127.0.0.1:8000/api/getallgroupsandlangages/";
+  return "http://192.168.1.9:4000/api/getallgroupsandlangages/";
+}
+export function renameSession()
+{
+  return "http://192.168.1.9:4000/api/renamesession/";
+}
+export function deletesession()
+{
+  return "http://192.168.1.9:4000/api/deletesession/";
+}
+export function getSessionUsers()
+{
+  return "http://192.168.1.9:4000/api/getsessionusers/";
 }

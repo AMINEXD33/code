@@ -46,21 +46,21 @@ function getRandomData() {
         data
     )
 }
-export function UpdatableDonut({InjectableForLoggin}) {
+export function UpdatableDonut({InjectableForLoggin, selectedSessionId, sessionTrackedData}) {
     let [data, setData] = useState(getRandomData());
     let [renderGraph, setrenderGraph] = useState(false);
     let thisChart = useRef(null);
     // Initialize the chart
-
-    useEffect(() => {
-        let intervalHolder = setInterval(() => { setData(getRandomData()) }, 4000);
-        return () => {
-            clearInterval(intervalHolder)
-        }
-    })
+    useEffect(()=>{
+        let data = [
+            {name:"finished", value:0},
+            {name:"inprogress", value:10}
+        ]
+        setData(data);
+    }, [sessionTrackedData])
     return (
         <ResponsiveContainer className={"responsiveCont"} width="100%" height="100%">
-            {renderGraph==true && <PieChart width={400} height={400}>
+            {selectedSessionId && <PieChart width={400} height={400}>
                 <Pie
                     data={data}
                     cx="50%"
@@ -76,7 +76,7 @@ export function UpdatableDonut({InjectableForLoggin}) {
                     ))}
                 </Pie>
             </PieChart>}
-            {renderGraph==false && 
+            {!selectedSessionId && 
                 <div className='placeholder_for_piechart'>
                         
                 </div>

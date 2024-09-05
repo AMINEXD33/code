@@ -2,7 +2,6 @@
     border-radius: 5px;
     border: 2px solid  var(--table_border);
     animation: apear_table 0.5s alternate forwards ease-in-out ;
-    display: none;
 }
 
 #tbmet, #tbmet>tbody>tr>td, #tbmet>tbody>tr>th{

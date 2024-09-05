@@ -1,0 +1,10 @@
+.linesgraphPlaceholder{
+    width: 500px;
+    height: 300px;
+    background-color: black;
+    background: var(--session_holder_gradiat);
+    /*this animation is from session_slider.css*/
+    animation: gradiant_animation 1s linear forwards infinite;
+    background-size: 200% 200%;
+    filter: blur(5px);
+}

@@ -1,0 +1,18 @@
+.counterPlaceHolder{
+
+}
+
+
+.counter{
+    display: flex;
+    align-items: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 10px;
+    background-color: var(--color);
+    padding: 10px;
+}
+.counter>div{
+    color: var(--divs_colors);
+
+}

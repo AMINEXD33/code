@@ -5,6 +5,7 @@ import Sessionform from "../create_session_form/sessionForm";
 import axios, { Axios } from "axios";
 import { callGetActiveSessions } from "@/(components)/api_caller/api_caller";
 import Logger from "../message_display/meassage_display_manager";
+import { splite_date } from "../../app/login/api_funcs";
 var loggerInjectable;
 var logger;
 // functions to handle the state of the shower
@@ -94,28 +95,34 @@ function loadData(data, sessionSlider, sessionHolder, token, setSelectedSessionI
     if (token.current.length > 0) {
         axios.post(callGetActiveSessions(), { "data": { "JWT": token.current } })
             .then(response => {
-                let data = response.data["data"];
-                let docFrag = document.createDocumentFragment();
-                for (let index = 0; index < data.length; index++) {
-                    let sessioniD = data[index]["session_id"];
-                    let title = data[index]["session_title"];
-                    let group = data[index]["session_title"];
-                    let startDate = data[index]["session_start_time"];
-                    let endDate = data[index]["session_start_time"];
-                    let cell = makeAsessionCell(title, group, startDate, endDate);
-                    console.log(cell);
-                    let evListener = cell.addEventListener("click", () => {
-                        setSelectedSessionId(sessioniD);
-                        for (let x = 0; x < SessionPickeventListiners.length; x++) {
-                            removeEventListener("click", SessionPickeventListiners[index]);
-                        }
-                    });
-                    SessionPickeventListiners.push(evListener);
-                    console.log(cell);
-                    console.log("heeeeere", tbodyRef.current)
-                    docFrag.appendChild(cell)
+                try{
+                    let data = response.data["data"];
+                    let docFrag = document.createDocumentFragment();
+                    const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                    for (let index = 0; index < data.length; index++) {
+                        let sessioniD = data[index]["session_id"];
+                        let title = data[index]["session_title"];
+                        let group = data[index]["session_users_groupe_name"];
+                        let startDate = new Date(splite_date(data[index]["session_start_time"])).toLocaleTimeString('en-US', options);
+                        let endDate = new Date(splite_date(data[index]["session_end_time"])).toLocaleTimeString('en-US', options);
+                        let cell = makeAsessionCell(title, group, startDate, endDate);
+                        console.log(cell);
+                        let evListener = cell.addEventListener("click", () => {
+                            setSelectedSessionId(sessioniD);
+                            for (let x = 0; x < SessionPickeventListiners.length; x++) {
+                                removeEventListener("click", SessionPickeventListiners[index]);
+                            }
+                        });
+                        SessionPickeventListiners.push(evListener);
+                        console.log(cell);
+                        console.log("heeeeere", tbodyRef.current)
+                        docFrag.appendChild(cell)
+                    }
+                    tbodyRef.current.appendChild(docFrag);
+                }catch(error){
+                    console.error("some went wrong parssing the data", error)
                 }
-                tbodyRef.current.appendChild(docFrag);
+
             })
             .catch(error => {
                 // log the error and that's it for now

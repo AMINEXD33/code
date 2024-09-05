@@ -24,7 +24,7 @@ function notnull(any) {
  * @param {*} dateString a valid date format string
  * @returns a Date object or null
  */
-function splite_date(dateString) {
+export function splite_date(dateString) {
   const rgx = /^([0-9]{4}.[0-9]{2}.[0-9]{2}).([0-9]{2}:[0-9]{2}:[0-9]{2})/;
   let matches = dateString.match(rgx);
   console.log(matches);
@@ -34,15 +34,11 @@ function splite_date(dateString) {
   if (matches.length === 0) {
     return null;
   }
-  try {
-    let ymd = matches[1].split("-");
-    let hms = matches[2].split(":");
-    let date_obj = Date.UTC(ymd[0], ymd[1] - 1, ymd[2], hms[0], hms[1], hms[2]);
-    return date_obj;
-  } catch (Exception) {
-    console.log(Exception);
-    return null;
-  }
+  let ymd = matches[1].split("-");
+  let hms = matches[2].split(":");
+  let date_obj = Date.UTC(ymd[0], ymd[1] - 1, ymd[2], hms[0], hms[1], hms[2]);
+  return date_obj;
+
 }
 /**
  * log_user_in:

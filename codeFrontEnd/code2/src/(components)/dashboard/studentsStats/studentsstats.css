@@ -1,0 +1,109 @@
+.studstatscontainer{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    gap: 20px;
+}
+.student{
+    display: flex;
+    align-items: start;
+    align-items: center;
+    width: 100%;
+    min-height: 60px;
+    background-color: rgba(0, 0, 0, 0.055);
+    border-radius: 10px;
+    gap: 5px;
+    flex-wrap: wrap;
+    padding: 5px;
+
+}
+.darkmode .student{
+    background-color: rgba(228, 228, 228, 0.089);
+}
+.student_profile{
+    display: flex;
+    width: 50px;
+    min-height: 50px;
+    background-color: aquamarine;
+    border-radius: 50px;
+    flex-wrap: wrap;
+}
+.student_name{
+    width: 150px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.collapsable{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+}
+.student_sum_stats{
+    width: auto;
+    background-color: cadetblue;
+}
+.student_actions{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    flex-wrap: nowrap;
+    width: 50%;
+    
+}
+.seeStats, .seeCode, .seeStats, .blockstudent{
+    width: 150px;
+    height: 40px;
+    border: 1px solid var(--color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.seeStats:hover, .seeCode:hover, .seeStats:hover, .blockstudent:hover{
+    transform: scale(1.02);
+
+}
+.seeStats{
+
+}
+.seeCode{
+
+}
+.blockstudent{
+    background-color: rgba(255, 0, 0, 0.192);
+}
+@media screen and (max-width:400px) and (min-width:200px) {
+    .student_actions{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: nowrap;
+        width: 100%;
+        flex-direction: column;
+    }
+    
+}
+.disclaimer{
+    background-color: rgba(158, 158, 0, 0.425);
+    animation:  glow2 1s alternate forwards ease-in-out infinite;
+    height: 40px;
+    width: 400px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+@keyframes glow2 {
+    0%{
+        box-shadow: 0px 0px 0px rgba(158, 158, 0, 0.425);
+    }
+
+    100%{
+        box-shadow: 0px 0px 10px  rgba(158, 158, 0, 0.425);
+    }
+    
+}

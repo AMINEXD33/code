@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./codeEditor.css";
 import { Editor } from "@monaco-editor/react";
 import { dbManager } from "@/database_manager/dbmanager";
+import Taskathand from "../dashboard/taskathand/taskathand";
+import Counter from "../dashboard/counter/counter";
 
 function setCostumSaveEventListeners(saveCallBack, db_instace, codeRef) {
     window.addEventListener("keydown", (e) => {
@@ -11,8 +13,8 @@ function setCostumSaveEventListeners(saveCallBack, db_instace, codeRef) {
         }
     })
 }
-function handlesaving(value, codeRef)
-{
+
+function handlesaving(value, metrics) {
     function show_message() {
         let editormask = document.getElementById("editmast1");
         let domftag = document.createDocumentFragment();
@@ -24,94 +26,87 @@ function handlesaving(value, codeRef)
         domftag.appendChild(new_info);
         editormask.appendChild(domftag);
     }
-    try{
+    try {
         window.localStorage.setItem("code", value);
-        console.log("setting code");
-    }catch(error){
-        throw "can't store code in local storage\n"+error;
+        // update the metrics
+        metrics.current[0].code = value;
+    } catch (error) {
+        throw "can't store code in local storage\n" + error;
     }
 }
-function handlechangingLanguage(event , setLanguage)
-{
+
+function handlechangingLanguage(event, setLanguage) {
     window.localStorage.setItem("fontsize", event.target.value);
     setLanguage(event.target.value);
 }
-function handlechangingFontsize(event, setFontsize)
-{
+
+function handlechangingFontsize(event, setFontsize) {
     window.localStorage.setItem("language", event.target.value);
     setFontsize(event.target.value);
 }
-export function CodeEditor() {
-    let allowedL = ["javascrypt", "typescript", "python", "c", "c++", "c#", "java"];
+
+export function CodeEditor({
+    token,
+    selectedSessionId,
+    sessionsTasks,
+    sockConnReff,
+    metrics
+}) {
     let codeRef = useRef("");
     let onholdDiv = useRef(null);
     let [code, setCode] = useState("");
     let [fontSize, setFontsize] = useState("16px");
-    let [language, setLanguage] = useState("javascript");
+    let [language, setLanguage] = useState("not set");
+    let number = useMemo(() => { return (selectedSessionId) });
+    const sockRequest1 = {
+        msgType: "request",
+        msg: "hahaaaa",
+        successCallback: (data) => { console.log(data) },
+        failedCallback: (error) => { console.log(error) },
+        expectedAfter: 2,
+        permanent: false
+    }
+    const sockRequest2 = {
+        msgType: "request",
+        msg: "yaaaa layliiii",
+        successCallback: (data) => { console.log(data) },
+        failedCallback: (error) => { console.log(error) },
+        expectedAfter: 4,
+        permanent: true
+    }
+
     useEffect(() => {
         let storedCode = window.localStorage.getItem("code");
         setCode(storedCode);
         onholdDiv.current.style.display = "none";
-        return () => {
-        }
-    }, [])
-    useEffect(()=>{
         let storedFontsize = window.localStorage.getItem("fontsize");
-        let storedLanguage = window.localStorage.getItem("language");
-
-        if (storedFontsize)
-        {
+        if (storedFontsize) {
             setFontsize(storedFontsize);
         }
-        if (storedLanguage)
-        {
-            setLanguage(storedLanguage);
+        if (selectedSessionId != null) {
+            // change this to reflect the langu in the future
+            try {
+                setLanguage(sessionsTasks.current[selectedSessionId]["languages_name"]);
+            } catch (error) {
+                console.error("can't reload")
+                console.log("selectedSessionId   ", selectedSessionId);
+                console.log("sessionsTasks", sessionsTasks);
+            }
         }
-    }, [])
 
-    
+    }, [selectedSessionId])
+
+
     return (
         <div className="editormask" id="editmast1">
             <div className="editor_on_hold" ref={onholdDiv}>
                 <div className="waitIcon"></div>
-                <h2>did you know that python is a snake !</h2>
+                <h2>please wait a second !</h2>
             </div>
-            <div className="taskathand">
-                <div className="title">
-                    <h4>Codding a quick sort algorithm</h4>
-                </div>
-                <div className="topics">
-                    <div className="topic">
-                        algorithms
-                    </div>
-                    <div className="topic">
-                        python
-                    </div>
-                    <div className="topic">
-                        dynamic programming
-                    </div>
-                </div>
-                <div className="task_definition">
-                    
-                    <p className="task_def_start">
-                        {`this assignment is going to be about a sorting algorithm all of you
-                        have learned about , so what we're going to do is code a sorting algorithm
-                        that takes O(n log(n)) time to sort an array of n element`}
-                    </p>
-                    <p className="task_def_middle">
-                        for exampla we have an array sv = [1, 5, 1, 5, 8, 3, 2]
-                        it should be sorted as [1, 1, 2, 3, 5, 6, 8]
-                    </p>
-                    <p className="task_def_end">
-                        best of luck.
-                    </p>
-                </div>
-
-
-            </div>
+            <Taskathand token={token} selectedSessionId={selectedSessionId} sessionsTasks={sessionsTasks} />
             <div className="editorsettings">
                 <label htmlFor="fontsize">font size</label>
-                <select id="fontsize" defaultValue={fontSize}onChange={(event)=>{handlechangingFontsize(event, setFontsize)}}>
+                <select id="fontsize" defaultValue={fontSize} onChange={(event) => { handlechangingFontsize(event, setFontsize) }}>
                     <option value={"10px"}>10px</option>
                     <option value={"12px"}>12px</option>
                     <option value={"14px"}>14px</option>
@@ -124,18 +119,15 @@ export function CodeEditor() {
                     <option value={"28px"}>28px</option>
                     <option value={"30px"}>30px</option>
                 </select>
-                <label htmlFor="language">languages</label>
-                <select id="language" defaultValue={language} onChange={(event)=>{handlechangingLanguage(event, setLanguage)}}>
-                    <option value={"javascript"}>javascript</option>
-                    <option value={"typescript"}>typescript</option>
-                    <option value={"python"}>python</option>
-                    <option value={"java"}>java</option>
-                    <option value={"c"}>c</option>
-                    <option value={"c++"}>c++</option>
-                    <option value={"c#"}>c#</option>
-                    <option value={"ruby"}>ruby</option>
-                    <option value={"json"}>json</option>
-                </select>
+                <label htmlFor="language">language</label>
+                <div id="language">{language}</div>
+                {/*ONLY SHOW WHEN A SESSION IS SELECTED */}
+                {selectedSessionId !== null &&
+                    <Counter
+                        token={token}
+                        selectedSessionId={selectedSessionId}
+                        sessionsTasks={sessionsTasks}
+                    />}
             </div>
             <Editor
                 height="100vh"
@@ -143,7 +135,7 @@ export function CodeEditor() {
                 language={language}
                 theme="vs-dark"
                 value={code}
-                onChange={(value) => {handlesaving(value)}}
+                onChange={(value) => { handlesaving(value, metrics) }}
                 options={{
                     inlineSuggest: true,
                     fontSize: fontSize,

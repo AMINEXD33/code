@@ -1,21 +1,20 @@
-import pako from "pako";
 /**
  * This class handles the connection to the server via WebSockets
  */
 export class Socks {
-    constructor(url, JwtToken, retryAllowed) {
+    constructor(url, JwtToken, retryAllowed, sockOnCloseCallback) {
         try {
             this.retryAllowed = retryAllowed; // how many retries are allowed if the server throws an error
             this.JwtToken = JwtToken; // the token for authentication
             this.host = url; // the host url
             this.sock = new WebSocket(url); // the socket instance
             // this.sock.binaryType = 'arraybuffer';
-            
             this.sock.binaryType = 'blob';
             // start the logic when the socket is open
             this.sock.onopen =  (event) => { this.onConnection(event) };
             this.queue = [];// queue to store the requests
-
+            this.sockOnCloseCallback = sockOnCloseCallback;
+            console.warn(typeof sockOnCloseCallback);
         }
         catch (Exception) {
             // throw an error if the WebSocket is not initiated
@@ -45,14 +44,33 @@ export class Socks {
      * @returns {JSON} Json the configured message
      */
     figureMsgType(msgType, msg){
+
         function authMessage(token) { return { "type": "auth", "token": token }; }
         function requestMessage(request) { return { "type": "request", "request": request } }
+        function codingActivity(data) { return { "type": "codingActivity", "data": data }; }
+        function susActivity(data) { return { "type": "susActivity", "data": data }; }
+        function notifme(data){return{"type":"notifme", "data":data}}
         let msgs = null;
         if (msgType === "auth") {
             msgs = JSON.stringify(authMessage(msg));
         }
         else if (msgType === "request") {
             msgs = JSON.stringify(requestMessage(msg));
+        }
+        else if (msgType === "codingActivity")
+        {
+            msgs = JSON.stringify(codingActivity(msg));
+        }
+        else if (msgType === "susActivity")
+        {
+            msgs = JSON.stringify(susActivity(msg));
+        }
+        else if (msgType === "notifme")
+        {
+            msgs = JSON.stringify(notifme(msg));
+        }
+        else{
+            console.error("the type of message", msgType, " is not valid !");
         }
         return msgs;
     }
@@ -115,6 +133,7 @@ export class Socks {
         let currTimeSeconds = new Date().getTime() / 1000;
         if (msgs) {
             // adding a new request to the queue
+            console.warn("msg has been queued")
             this.queue.push(
                 [
                     msgType, // message type
@@ -130,7 +149,11 @@ export class Socks {
             throw "you didn't pass a valid message type this is the problem => " + msgType;
         }
     }
-
+    /**
+     * a function that decompresses the data comming as bytes , using gzip algo
+     * @param {*} bytes data as bytes
+     * @returns the decompressed data or throws an error
+     */
     async decompress(bytes)
     {
         if (!bytes){return;}
@@ -147,7 +170,11 @@ export class Socks {
             throw "can't decompress data \n"+Exception;
         }
     }
-
+    /**
+     * this functions compressess data from json to bytes using gzip algo
+     * @param {*} json a json data
+     * @returns the compressed data
+     */
     async compress(json)
     {
         async function compressText(string)
@@ -194,6 +221,7 @@ export class Socks {
     AuthHandleClosedConnection(event, cleanEvents) {
         console.warn("auth server closed connection");
         console.error("authentication is refused");
+        this.sockOnCloseCallback();
         this.AuthClearEvents(true, true, true);
     }
     /**
@@ -242,6 +270,7 @@ export class Socks {
      * @param {*} This pointer to this instance
      */
     handleClosedConnection(event) {
+        this.sockOnCloseCallback();
         this.clearEvents(true, true, true);
     }
     /**

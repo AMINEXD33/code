@@ -96,23 +96,3 @@
     font-size: medium;
     padding: 2px;
 }
-.taskathand{
-    background-color: var(--divs_colors);
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-.topics{
-    display: flex;
-    align-items: center;
-    justify-content: start;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.topic{
-    border-radius: 20px;
-    padding: 5px;
-    background-color: rgb(65, 188, 245);
-}

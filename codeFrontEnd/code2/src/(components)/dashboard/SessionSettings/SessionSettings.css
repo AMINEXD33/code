@@ -1,0 +1,66 @@
+.outercirc{
+    width: 130px;
+    height: 40px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 0, 0, 0.507);
+    border: 1px solid rgba(255, 0, 0, 0.507);
+    text-wrap: nowrap;
+}
+.changename{
+    width: 130px;
+    height: 40px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 255, 64, 0.719);
+    border: 1px solid rgba(0, 255, 64,  0.719);
+    text-wrap: nowrap;
+}
+.changename:hover{
+    animation: togreen 0.3s alternate forwards ease-in-out;
+    cursor: pointer;
+}
+.outercirc:hover{
+    animation: tored 0.3s alternate forwards ease-in-out;
+    cursor: pointer;
+}
+@keyframes tored {
+    from{
+        background-color: transparent;
+    }
+    to{
+        background-color: rgba(255, 0, 0, 0.247);
+    }
+    
+}
+@keyframes togreen {
+    from{
+        background-color: transparent;
+    }
+    to{
+        background-color: rgba(0, 255, 64, 0.247);
+    }
+    
+}
+#sessionname{
+    height: 20px;
+    width: max-content;
+}
+.settigns_container{
+    width: 100%;
+    height: auto;
+    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+.setting{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
