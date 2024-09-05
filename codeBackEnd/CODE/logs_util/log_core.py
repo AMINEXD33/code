@@ -11,15 +11,16 @@ class Colors:
 
 class LogCore:
     """
-        small class that helps with loging messages
-        @ source_file: 
-            the source of the log(best practice to pass the name of the file the class is initiated in)
-        @ txtfile_friendly:
-            True : logs the msg as it is
-            False : adds color to it, to make it easy to read,
-                    if you're intending on reading the file from
-                    a terminal.
+    small class that helps with loging messages
+    @ source_file:
+        the source of the log(best practice to pass the name of the file the class is initiated in)
+    @ txtfile_friendly:
+        True : logs the msg as it is
+        False : adds color to it, to make it easy to read,
+                if you're intending on reading the file from
+                a terminal.
     """
+
     __EXCEPTIONS_FILE_NAME = "exceptions.txt"
     __INFO_FILE_NAME = "info.txt"
     __ROOTINE_FILE_NAME = "rootine.txt"
@@ -30,8 +31,7 @@ class LogCore:
 
     def writer(self, file_name: str, content: str):
         with open("logs_util/" + file_name, "a") as file:
-            file.write(content+'\n')
-
+            file.write(content + "\n")
 
     def log_exception(self, content: str):
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

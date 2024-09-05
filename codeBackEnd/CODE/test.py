@@ -1,14 +1,13 @@
 from jwt_multi_workers import jwt_impl
 
 
-
 ss = jwt_impl.JWT_IMP()
 
 ss.sync_keys()
 ss.refresh_keys()
 
 
-tok = ss.make_token(**{'amine':"meftah"})
+tok = ss.make_token(**{"amine": "meftah"})
 
 print(tok)
 

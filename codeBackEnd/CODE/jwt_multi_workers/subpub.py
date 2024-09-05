@@ -47,7 +47,6 @@ class Sub_Pub_manager:
             private_key = extracted_keys["private_key"]
             public_key = extracted_keys["public_key"]
 
-
             print(private_key == public_key)
             self.JWT_instance.keys.from_json(private_key, public_key)
             # print("loaded from chanell")

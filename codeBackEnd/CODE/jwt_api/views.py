@@ -25,10 +25,18 @@ from logs_util.log_core import LogCore
 from jwt_api.serializers import *
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.db import connection
+from collections import namedtuple
 
 reference = apps.get_app_config("jwt_api").my_object
 # Create your views here.
-
+def dictfetchall(cursor):
+        """
+        Return all rows from a cursor as a dict.
+        Assume the column names are unique.
+        """
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 def removeSpaces(some_str: str):
     """
@@ -51,17 +59,12 @@ def allow_(jwt_encrypted_token, authority="user"):
     """
     s = LogCore("views.py", False)
     try:
-        print(jwt_encrypted_token)
-        print("decrepting .....")
         flag = reference.TokenManager.abstract_token_validation(jwt_encrypted_token)
-        print("out ...")
-        print(flag)
         if flag is False:
             return False
 
         # the flag contains the decrypted jwt now
         role: str = flag.get("role")
-        print(role)
         # retrurn fals if no role was in the jwt , how ? idk but we're preping for the end of the world here :)
         if not role:
             return False
@@ -106,7 +109,7 @@ def get_body_from_request(request) -> dict | None:
 @require_http_methods(["POST"])
 @csrf_exempt
 def login(request):
-    """ "
+    """
     this view signs in  a client
     """
     # re-referencing the global var for better performance
@@ -395,7 +398,6 @@ def login(request):
 @csrf_exempt
 def refresh(request):
     # re-referencing the global var for better performance
-    print("HERE")
     global reference
     log = LogCore("views.py, def refresh", False)
     unauthorized = HttpResponseForbidden({"err": "plz re-log in"})
@@ -551,6 +553,7 @@ def refresh(request):
         # if refresh token is valid then we return a new configured token
         user = get_user(refresh_token)
         if not user:
+            print("no user")
             return unauthorized
         # configure the token
         token, expdate, refresh_token, refresh_tk_exp_date = make_new_token_and_cachit(
@@ -602,10 +605,11 @@ def get_dec(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def create_session(request):
+    from .consumers_soft_records_system import SoftRecords
+
     s = LogCore("views.py", False)
     try:
         body: dict = get_body_from_request(request)
-        print(type(body))
         flag = allow_(body["data"]["JWT"], authority="admin")
         if not flag:
             return HttpResponseForbidden()
@@ -635,6 +639,7 @@ def create_session(request):
             hours=duration_of_the_session
         )
         session_ends_time = timezone.make_aware(session_ends_time)
+
         current_time = timezone.make_aware(datetime.datetime.now())
 
         if session_ends_time <= current_time:
@@ -694,12 +699,22 @@ def create_session(request):
             sessionMetric_total_students=students_count,
             sessionMetric_SessionRef=new_session,
         )
-
         # commit the two records as a transaction
         with transaction.atomic():
             new_session.save()
             new_metricRecord.save()
 
+        sft_rec = SoftRecords(reference.Redis)
+        tmp_flag = True
+        print("YEEEEEEYE"+str(new_session.session_id))
+        if sft_rec.create_master_soft_record(str(new_session.session_id)) == True:
+            tmp_flag = False
+
+        if tmp_flag == True:
+            s.log_exception("can't create master soft record for a session")
+            new_session.delete()
+            new_metricRecord.delete()
+            return HttpResponseServerError("can't create a record")
         print(
             f"""
         allowed to run = {allowed_to_run_code} [{type(allowed_to_run_code)}]
@@ -716,11 +731,11 @@ def create_session(request):
 
     except ValidationError as e:
         if "Duplicate entry" in e.message_dict or "Duplicate" in e.message_dict:
-            log.log_exception("can't commit with a duplicated data" + str(e))
+            s.log_exception("can't commit with a duplicated data" + str(e))
             return HttpResponseBadRequest("can't commit with a duplicated data")
 
     except Exception as e:
-        s.log_exception("from get_all_active_sessions" + str(e))
+        s.log_exception("from create session" + str(e))
         return HttpResponseServerError("can't create the session")
 
 
@@ -740,24 +755,114 @@ def test_token(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def get_all_active_sessions(request):
+    from django.db import connection
+    from collections import namedtuple
+
+    def dictfetchall(cursor):
+        """
+        Return all rows from a cursor as a dict.
+        Assume the column names are unique.
+        """
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
     s = LogCore("views.py", False)
     data = []
+    query = """
+    SELECT
+        session_id,
+        session_status,
+        session_start_time,
+        session_end_time,
+        session_allowed_to_run_code,
+        session_starter_id,
+        session_task,
+        session_title,
+        session_topics,
+        session_target_group_id,
+        languages_name,
+        session_users_groupe_name
+    FROM
+        jwt_api_session
+    INNER JOIN  jwt_api_session_users_groupe ON session_target_group_id = session_users_groupe
+    INNER JOIN jwt_api_languages on languages_id = session_language_ref_id
+    WHERE session_status = 1 AND session_starter_id = %s;
+    """
     try:
         body: dict = get_body_from_request(request)
         flag = allow_(body["data"]["JWT"], authority="admin")
-
-        print(type(flag))
-        print(flag)
+        if flag == False:
+            return HttpResponseForbidden("you're not allowed to make such requests")
         id: str = flag["id"]
-        print("we're lokking for the id = ", id)
+
         if not id:
             return HttpResponseServerError("can't get the id from the token!")
-        sessions = Session.objects.filter(session_starter=id).all()
+        sessions = ()
+        with connection.cursor() as cursor:
+            cursor.execute(query, [id])
+            sessions = dictfetchall(cursor)
+
         for session in sessions:
-            data.append(Session_serializer(session).data)
+            tmp_dict = {}
+            for variable in session:
+                tmp_dict[variable] = session[variable]
+            data.append(tmp_dict)
+
     except Exception as e:
         s.log_exception("from get_all_active_sessions" + str(e))
-        return HttpResponseServerError
+        return HttpResponseServerError("some error accured while getting sessions")
+
+    return JsonResponse({"data": data})
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def get_all_active_sessions_student(request):
+    s = LogCore("views.py", False)
+    data = []
+    query = """
+    SELECT
+        session_id,
+        session_status,
+        session_start_time,
+        session_end_time,
+        session_allowed_to_run_code,
+        session_starter_id,
+        session_task,
+        session_title,
+        session_topics,
+        session_target_group_id,
+        languages_name,
+        session_users_groupe_name
+    FROM jwt_api_session_users_groupe_refs
+    INNER JOIN jwt_api_session on session_target_group_id = user_group_refs_users_groupe_id
+    INNER JOIN jwt_api_session_users_groupe on session_target_group_id = session_users_groupe
+    INNER JOIN jwt_api_languages on languages_id = session_language_ref_id
+    WHERE user_group_refs_user_ref_id = %s AND session_status = 1;
+    """
+    try:
+        body: dict = get_body_from_request(request)
+        flag = allow_(body["data"]["JWT"], authority="user")
+        if flag == False:
+            return HttpResponseForbidden("you're not allowed to make such requests")
+        id: str = flag["id"]
+        # print("we're lokking for the id = ", id)
+        if not id:
+            return HttpResponseServerError("can't get the id from the token!")
+        sessions = ()
+        with connection.cursor() as cursor:
+            cursor.execute(query, [id])
+            sessions = dictfetchall(cursor)
+
+        for session in sessions:
+            tmp_dict = {}
+            for variable in session:
+                tmp_dict[variable] = session[variable]
+            data.append(tmp_dict)
+
+    except Exception as e:
+        s.log_exception("from get_all_active_sessions" + str(e))
+        return HttpResponseServerError("some error accured while getting sessions")
 
     return JsonResponse({"data": data})
 
@@ -809,3 +914,86 @@ def get_all_groups_and_langages(request):
         return HttpResponseServerError()
 
     return JsonResponse({"data": {"groups": groups_list, "languages": langs_list}})
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def change_session_name(request):
+    s = LogCore("views.py", False)
+    try:
+        body:dict = get_body_from_request(request)
+        flag = allow_(body["JWT"], authority="admin")
+        id: str = flag["id"]
+        print("we're lokking for the id = ", id)
+        if not id:
+            return HttpResponseServerError("can't get the id from the token!")
+        session = Session.objects.filter(session_id = body["sessionid"]).first()
+        if session:
+            if body["name"] == session.session_title:
+                return HttpResponse("the session name is the same!")
+            session.session_title = body["name"]
+            session.save()
+        else:
+            return HttpResponseBadRequest("no session was found with this id")
+    except Exception as e:
+        s.log_exception("from change_session_name" + str(e))
+        return HttpResponseServerError("can't delete the session")
+    
+    return HttpResponse("the session name was changed!")
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def delete_session(request):
+    s = LogCore("views.py", False)
+    try:
+        body:dict = get_body_from_request(request)
+        flag = allow_(body["JWT"], authority="admin")
+        id: str = flag["id"]
+        print("we're lokking for the id = ", id)
+        if not id:
+            return HttpResponseServerError("can't get the id from the token!")
+        session = Session.objects.filter(session_id = body["sessionid"]).first()
+        if not session:
+            return HttpResponseServerError("can't find a session with that id!")
+        tracking_record = sessionMetricsHardRecord.objects.filter(sessionMetric_SessionRef=session).first()
+        if session:
+            session.delete()
+        if tracking_record:
+            tracking_record.delete()
+    except Exception as e:
+        s.log_exception("from delete_session" + str(e))
+        return HttpResponseServerError("can't delete the session")
+    return HttpResponse("session deleted!")
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def get_session_users(request):
+    query = """
+    SELECT
+    user_id,
+    user_username,
+    img_src
+    FROM jwt_api_session
+    INNER JOIN jwt_api_session_users_groupe_refs
+    ON jwt_api_session_users_groupe_refs.user_group_refs_users_groupe_id = jwt_api_session.session_target_group_id
+    INNER JOIN  jwt_api_users
+    ON jwt_api_users.user_id = jwt_api_session_users_groupe_refs.user_group_refs_user_ref_id
+    WHERE session_id = %s;
+    """
+    s = LogCore("views.py", False)
+    try:
+        body:dict = get_body_from_request(request)
+        flag = allow_(body["JWT"], authority="admin")
+        id: str = flag["id"]
+        print("we're lokking for the id = ", id)
+        if not id:
+            return HttpResponseServerError("can't get the id from the token!")
+        users = None
+        session_id = body["sessionid"]
+        with connection.cursor() as cursor:
+            cursor.execute(query, [session_id])
+            users = dictfetchall(cursor)
+        print("USERS = >>>", users)
+    except Exception as e:
+        s.log_exception("get_session_users" + str(e))
+        return HttpResponseServerError("can't delete the session")
+    return JsonResponse(users, safe=False)

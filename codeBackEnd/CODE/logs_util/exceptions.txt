@@ -1,3 +1,69 @@
 
-[[92m2024-08-16 23:13:47[0m]([93mviews.py[0m):[91m from get_all_active_sessionsHttpRequest.__init__() got an unexpected keyword argument 'status'[0m
-[[92m2024-08-16 23:15:03[0m]([93mviews.py[0m):[91m from get_all_active_sessionsname 'HttpResponse' is not defined[0m
+[[92m2024-08-31 17:16:58[0m]([93mviews.py[0m):[91m from get_all_active_sessions'bool' object is not subscriptable[0m
+[[92m2024-08-31 17:16:58[0m]([93mviews.py[0m):[91m from get_all_active_sessions'bool' object is not subscriptable[0m
+[[92m2024-08-31 17:17:22[0m]([93mviews.py[0m):[91m from get_all_active_sessions'bool' object is not subscriptable[0m
+[[92m2024-08-31 17:17:22[0m]([93mviews.py[0m):[91m from get_all_active_sessions'bool' object is not subscriptable[0m
+[[92m2024-08-31 17:27:22[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 17:31:42[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 17:53:07[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 17:54:46[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 17:59:26[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 18:00:42[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 18:04:09[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 18:07:13[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 18:09:30[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 21:01:23[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 21:23:38[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 21:27:23[0m]([93mviews.py, def refresh[0m):[91m error while getting refresh token Refresh_tokens matching query does not exist.[0m
+[[92m2024-08-31 21:27:56[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 21:29:59[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 21:33:29[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-08-31 21:48:14[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-09-02 16:39:39[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-09-02 16:47:03[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-09-02 19:16:36[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:17:29[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:17:49[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:57:28[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:57:48[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:57:53[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:58:03[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:58:51[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:59:08[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 19:59:09[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-02 20:02:17[0m]([93mviews.py[0m):[91m from change_session_name'data'[0m
+[[92m2024-09-04 22:33:04[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:33:04[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:33:04[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:33:04[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:34:42[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:34:42[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:34:42[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:34:42[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:35:02[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:35:02[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:35:02[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:35:02[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:35:27[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:35:27[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:35:27[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:35:27[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:38:57[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:38:57[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:38:57[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:38:57[0m]([93mviews.py[0m):[91m from delete_session'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:39:30[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:39:30[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:39:30[0m]([93mviews.py[0m):[91m get_session_users'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:39:30[0m]([93mviews.py[0m):[91m get_session_users'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:41:12[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:41:12[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:41:12[0m]([93mviews.py[0m):[91m get_session_users'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:41:12[0m]([93mviews.py[0m):[91m get_session_users'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:43:46[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:43:46[0m]([93mviews.py[0m):[91m can only concatenate str (not "AttributeError") to str[0m
+[[92m2024-09-04 22:43:46[0m]([93mviews.py[0m):[91m get_session_users'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:43:46[0m]([93mviews.py[0m):[91m get_session_users'bool' object is not subscriptable[0m
+[[92m2024-09-04 22:44:41[0m]([93mviews.py[0m):[91m get_session_usersname 'connection' is not defined[0m
+[[92m2024-09-04 22:44:41[0m]([93mviews.py[0m):[91m get_session_usersname 'connection' is not defined[0m
+[[92m2024-09-05 00:23:24[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m

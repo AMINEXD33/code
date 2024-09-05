@@ -4,6 +4,7 @@ import json
 import hashlib
 from logs_util.log_core import LogCore
 import time
+
 log = LogCore("token_manager.py", False)
 
 
@@ -279,17 +280,17 @@ class Token_manager:
         expiration_date_obj = None
         try:
             expiration_date_obj = datetime.datetime.strptime(
-            expiration_date_str, "%Y/%m/%d %H:%M:%S"
+                expiration_date_str, "%Y/%m/%d %H:%M:%S"
             )
         except:
             try:
                 expiration_date_obj = datetime.datetime.strptime(
-                expiration_date_str, "%Y-%m-%d %H:%M:%S"
+                    expiration_date_str, "%Y-%m-%d %H:%M:%S"
                 )
             except:
                 log.log_exception("WTF IS THAT DATE")
                 return False
-                
+
         if current_date >= expiration_date_obj:
             self.add_to_blacklist(token)
             log.log_exception("expired tok")

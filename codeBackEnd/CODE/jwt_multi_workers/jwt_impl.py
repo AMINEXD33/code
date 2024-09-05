@@ -63,7 +63,7 @@ class JWT_IMP:
 
     def refresh_keys(self):
         """
-            this function refresh the keys
+        this function refresh the keys
         """
         # keys are not in redis
         # generate new pair
