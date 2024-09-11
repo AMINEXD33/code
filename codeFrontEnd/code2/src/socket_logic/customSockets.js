@@ -11,7 +11,7 @@ export class Socks {
             // this.sock.binaryType = 'arraybuffer';
             this.sock.binaryType = 'blob';
             // start the logic when the socket is open
-            this.sock.onopen =  (event) => { this.onConnection(event) };
+            this.sock.onopen = (event) => { this.onConnection(event) };
             this.queue = [];// queue to store the requests
             this.sockOnCloseCallback = sockOnCloseCallback;
             console.warn(typeof sockOnCloseCallback);
@@ -43,13 +43,13 @@ export class Socks {
      * @param {*} msg the message
      * @returns {JSON} Json the configured message
      */
-    figureMsgType(msgType, msg){
+    figureMsgType(msgType, msg) {
 
         function authMessage(token) { return { "type": "auth", "token": token }; }
         function requestMessage(request) { return { "type": "request", "request": request } }
         function codingActivity(data) { return { "type": "codingActivity", "data": data }; }
         function susActivity(data) { return { "type": "susActivity", "data": data }; }
-        function notifme(data){return{"type":"notifme", "data":data}}
+        function notifme(data) { return { "type": "notifme", "data": data } }
         let msgs = null;
         if (msgType === "auth") {
             msgs = JSON.stringify(authMessage(msg));
@@ -57,19 +57,16 @@ export class Socks {
         else if (msgType === "request") {
             msgs = JSON.stringify(requestMessage(msg));
         }
-        else if (msgType === "codingActivity")
-        {
+        else if (msgType === "codingActivity") {
             msgs = JSON.stringify(codingActivity(msg));
         }
-        else if (msgType === "susActivity")
-        {
+        else if (msgType === "susActivity") {
             msgs = JSON.stringify(susActivity(msg));
         }
-        else if (msgType === "notifme")
-        {
+        else if (msgType === "notifme") {
             msgs = JSON.stringify(notifme(msg));
         }
-        else{
+        else {
             console.error("the type of message", msgType, " is not valid !");
         }
         return msgs;
@@ -154,10 +151,9 @@ export class Socks {
      * @param {*} bytes data as bytes
      * @returns the decompressed data or throws an error
      */
-    async decompress(bytes)
-    {
-        if (!bytes){return;}
-        try{
+    async decompress(bytes) {
+        if (!bytes) { return; }
+        try {
             const ds = new DecompressionStream('gzip');
             const decompressedStream = bytes.stream().pipeThrough(ds);
             const decompressedBlob = await new Response(decompressedStream).blob();
@@ -165,9 +161,8 @@ export class Socks {
             console.log(decompressedText)
             return decompressedText
         }
-        catch(Exception)
-        {
-            throw "can't decompress data \n"+Exception;
+        catch (Exception) {
+            throw "can't decompress data \n" + Exception;
         }
     }
     /**
@@ -175,10 +170,8 @@ export class Socks {
      * @param {*} json a json data
      * @returns the compressed data
      */
-    async compress(json)
-    {
-        async function compressText(string)
-        {
+    async compress(json) {
+        async function compressText(string) {
             const textBlob = new Blob([string], { type: 'json' });
             const stream = textBlob.stream();
             const compressedStream = stream.pipeThrough(new CompressionStream('gzip'));
@@ -239,16 +232,16 @@ export class Socks {
         this.AuthClearEvents(true, true, true);
         // if we can't connect throw an error
         throw "can't connect after trying the specified 'retryAllowed' ";
-        
+
     }
-    AuthClearEvents(message, error, close){
-        if (message){
+    AuthClearEvents(message, error, close) {
+        if (message) {
             this.sock.removeEventListener("message", this.handleMessageRecieved);
         }
-        if (error){
+        if (error) {
             this.sock.removeEventListener("error", this.hadleErrorConnection);
         }
-        if (close){
+        if (close) {
             this.sock.removeEventListener("close", this.handleClosedConnection);
         }
     }
@@ -261,7 +254,7 @@ export class Socks {
     async handleMessageRecieved(event, successCallback) {
         // decpmpress data and parse the response
         let response = JSON.parse(await this.decompress(event.data));
-        successCallback(response)
+        successCallback(response);
         this.clearEvents(true, false, false);
     }
     /**
@@ -283,14 +276,14 @@ export class Socks {
         errorCallback(error);
         this.clearEvents(true, true, true);
     }
-    clearEvents(message, error, close){
-        if (message){
+    clearEvents(message, error, close) {
+        if (message) {
             this.sock.removeEventListener("message", this.handleMessageRecieved);
         }
-        if (error){
+        if (error) {
             this.sock.removeEventListener("error", this.hadleErrorConnection);
         }
-        if (close){
+        if (close) {
             this.sock.removeEventListener("close", this.handleClosedConnection);
         }
     }
@@ -377,7 +370,6 @@ export class Socks {
         for (let index = 0; index < toPop.length; index++) {
             this.queue.splice(toPop[index], 1);
             console.log("removing index", index, "  from queue");
-
         }
     }
     /**
@@ -388,7 +380,6 @@ export class Socks {
         let loop = 0;
         setInterval(() => {
             this.loopRoutine();
-            
             loop++;
         }, 1000);
     }

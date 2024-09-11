@@ -1,0 +1,98 @@
+.close_widows {
+    width: 40px;
+    height: 40px;
+    background-image: url("../../../../public/close.svg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgba(255, 0, 0, 0.692);
+    z-index: 2;
+}
+
+.close_widows:hover {
+    animation: glow_red 1s ease-in-out forwards alternate;
+    cursor: pointer;
+}
+
+@keyframes glow_red {
+    from {
+        box-shadow: 0px 0px 0px 0px transparent;
+    }
+
+    to {
+        box-shadow: 5px 5px 20px 5px rgba(255, 0, 0, 0.301);
+    }
+
+}
+
+.window_ {
+    width: 900px;
+    height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    animation: apear_window 0.3s alternate forwards ease-in-out;
+    top: -0%;
+}
+
+.window_container {
+    width: 900px;
+    height: 600px;
+    position: relative;
+    background-color: var(--divs_colors);
+    z-index: 1;
+    border-radius: 10px;
+}
+
+@keyframes apear_window {
+    from {
+        scale: 0.9;
+        opacity: 0.5;
+    }
+
+    to {
+        scale: 1;
+        opacity: 1;
+    }
+}
+
+.codewindow {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.editor2 {
+    height: 100%;
+}
+
+
+@media screen and (min-width:700px) and (max-width: 1000px) {
+    .window_ {
+        width: 650px;
+        height: 400px;
+    }
+
+    .window_container {
+        width: 650px;
+        height: 400px;
+    }
+}
+
+@media screen and (min-width:400px) and (max-width: 700px) {
+    .window_ {
+        width: 350px;
+        height: 300px;
+    }
+
+    .window_container {
+        width: 350px;
+        height: 300px;
+    }
+}
+
+.statswindow {
+    background-color: red;
+}

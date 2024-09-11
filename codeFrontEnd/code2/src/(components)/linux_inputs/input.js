@@ -8,11 +8,11 @@ import "./input.css";
 
 
 
-export default function Input({ 
-    name, 
-    type, 
-    placeholder, 
-    id = "" ,
+export default function Input({
+    name,
+    type,
+    placeholder,
+    id = "",
     onChange
 }) {
     let inpt = useRef(null);
@@ -45,16 +45,14 @@ export default function Input({
     return (
         <>
             <div className="linux_input" id={id} ref={inpt}>
-                <div className="info">
-                    <p className="name">{name}</p><p className="dollar" ref={inpt3}>$</p>
-                </div>
+
                 <input
                     type={type}
                     placeholder={placeholder}
                     onFocus={focusit}
                     ref={inpt2}
-                    onChange={(e)=>{onChange(e.target.value)}}
-                    />
+                    onChange={(e) => { onChange(e.target.value) }}
+                />
             </div>
         </>
     )

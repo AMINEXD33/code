@@ -76,11 +76,9 @@ function log_user_in(
         sameSite: "None",
         secure: true,
       });
-      console.log("[!]cookie is set");
     } catch (Exception) {
-      console.log("cookie set error = > ", Exception);
+      console.error("cookie set error = > ", Exception);
     }
-    console.log(parsedRefreshExpirationDate);
     return true;
   } catch {
     return false;
@@ -119,6 +117,7 @@ export async function login(username, password) {
       refresh_token,
       refresh_token_expiration_date,
     } = response.data;
+
     // Handle login
     let login_try = log_user_in(
       JWT,
@@ -126,10 +125,12 @@ export async function login(username, password) {
       refresh_token,
       refresh_token_expiration_date,
     );
+
     if (!login_try) {
       rt.push("/login?err=login failed");
       return false;
-    }
+    };
+
     return true;
   } catch {
     return false;

@@ -4,43 +4,36 @@ export function callSessiondata() {
 export function callLoginApi() {
   return "http://192.168.1.9:4000/api/login/";
 }
-export function callRefreshApi()
-{
+export function callRefreshApi() {
   return "http://192.168.1.9:4000/api/refresh/";
 }
-export function callTestReq()
-{
+export function callTestReq() {
   return "http://192.168.1.9:4000/api/test/";
 }
-export function callGetActiveSessions()
-{
+export function callGetActiveSessions() {
   return "http://192.168.1.9:4000/api/getactivesessions/";
 }
-export function callGetActiveSessionsStudents()
-{
+export function callGetActiveSessionsStudents() {
   return "http://192.168.1.9:4000/api/getallsessionsstudents/";
 }
-export function callCreateSession()
-{
+export function callCreateSession() {
   return "http://192.168.1.9:4000/api/makesession/";
 }
-export function callGetGroups()
-{
+export function callGetGroups() {
   return "http://192.168.1.9:4000/api/getallgroups/";
 }
-export function callGetGroupsGetLangues()
-{
+export function callGetGroupsGetLangues() {
   return "http://192.168.1.9:4000/api/getallgroupsandlangages/";
 }
-export function renameSession()
-{
+export function renameSession() {
   return "http://192.168.1.9:4000/api/renamesession/";
 }
-export function deletesession()
-{
+export function deletesession() {
   return "http://192.168.1.9:4000/api/deletesession/";
 }
-export function getSessionUsers()
-{
+export function getSessionUsers() {
   return "http://192.168.1.9:4000/api/getsessionusers/";
+}
+export function redirectToDashboard() {
+  return "http://192.168.1.9:4000/api/redirecttopage/";
 }

@@ -10,20 +10,32 @@ export default class Logger {
 
     success(enjectableElementRef, content) {
         let fragment = this.#create_msg('msg', content);
-        enjectableElementRef.current.append(fragment);
+        if (enjectableElementRef.current) {
+            enjectableElementRef.current.append(fragment);
+        }
+
     }
 
     error(enjectableElementRef, content) {
         let fragment = this.#create_msg('error', content);
-        enjectableElementRef.current.append(fragment);
+        if (enjectableElementRef.current) {
+            enjectableElementRef.current.append(fragment);
+        }
+
     }
 
     info(enjectableElementRef, content) {
         let fragment = this.#create_msg('info', content);
-        enjectableElementRef.current.append(fragment);
+        if (enjectableElementRef.current) {
+            enjectableElementRef.current.append(fragment);
+        }
+
     }
     recommendation(enjectableElementRef, content) {
         let fragment = this.#create_msg('recom', content);
-        enjectableElementRef.current.append(fragment);
+        if (enjectableElementRef.current) {
+            enjectableElementRef.current.append(fragment);
+        }
+
     }
 }

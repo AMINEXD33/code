@@ -9,6 +9,8 @@ import Link from "next/link";
 import { login } from "./api_funcs";
 import useJwtToken from "@/(components)/custom_hooks/UseJwtToken";
 import { useRouter } from "next/navigation";
+import { redirectToDashboard } from "../../(components)/api_caller/api_caller";
+import axios from "axios";
 function Login() {
   let logCallStatus = useRef(false);
   let username = useRef("");
@@ -25,8 +27,8 @@ function Login() {
   async function handleResponse() {
     let loginState = await login(username.current, password.current);
     if (loginState == true) {
-      console.log("state of login is , ", flag.current);
-      router.push("/private/dashboard?msg=you're loged in haha");
+
+      router.push("/private/dashboardstudents?msg=you're loged in haha");
     }
 
     return loginState;
