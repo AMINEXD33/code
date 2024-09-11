@@ -20,62 +20,6 @@ log = LogCore("consumers.py", False)
 # reference to the jwt_module to handle authentication
 reference = apps.get_app_config("jwt_api").my_object
 
-
-class ChatConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.authenticated = False
-        self.soft_records = SoftRecords(reference.Redis)
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        pass
-
-    async def receive(self, bytes_data=None):
-        decompressed_data: str = decompress(bytes_data)
-        try:
-            # here it should return a dict but the type i get is str
-            text_data_json:dict = json.loads(json.loads(decompressed_data))
-            print(text_data_json["type"])
-            print(text_data_json)
-            message_type: str = text_data_json.get("type")
-            if message_type == "auth":
-                token = text_data_json.get("token")
-                self.authenticated = await self.authenticate(token)
-                if not self.authenticated:
-                    await self.close()
-                else:
-                    print("sending ok message")
-                    compressed_data: bytes = compress(
-                        json.dumps({"type": "info", "message": "ok"})
-                    )
-                    await self.send(bytes_data=compressed_data)
-            elif message_type == "echoback":
-                await self.handle_some_event(decompressed_data)
-            elif self.authenticated:
-                # Handle other messages
-                await self.handle_other_messages(text_data_json)
-        except Exception as e:
-            log.log_exception(str(e))
-            print(e)
-
-    async def authenticate(self, token):
-        # Implement your token validation logic here
-        return token == "your_valid_token"
-
-    async def handle_some_event(self, daya):
-        # Handle the event and decide to close the connection
-        compressed_data: bytes = compress(json.dumps(data))
-        await self.send(bytes_data=compressed_data)
-        await self.close()
-
-    async def handle_other_messages(self, message):
-        # Handle other messages
-        compressed_data: bytes = compress(
-            json.dumps({"type": "message", "content": message})
-        )
-        await self.send(bytes_data=compressed_data)
-
-
 class track_stats(AsyncWebsocketConsumer):
     """
     a consumer class that is meant for tracking users stats
@@ -193,7 +137,7 @@ class track_stats(AsyncWebsocketConsumer):
             the username of the client sending the updates 
         data_to_update : tuple
             a tupple that describes the kind of update that needs to be mapped , and the data
-            each kind of update have it's own handler
+            fro each kind of update, each have it's own handler
         """
         try:
             # we don't want to keep querying the session to check validity every time, that would

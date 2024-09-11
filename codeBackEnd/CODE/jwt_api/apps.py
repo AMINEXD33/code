@@ -18,14 +18,14 @@ def periodic_stats_updates(jb, nt, sfr):
             }
     )
     while True:
-        time.sleep(30)
+        time.sleep(10)
         channel_layer = get_channel_layer()
         all_jobs = jb.get_jobs()
         all_notify_targets = nt.get_notis()
         
-        print("FROM UPDATE THREAD >>", end="")
-        print(f"type of {type(all_jobs)}   > {all_jobs}")
-        print(f"type of {type(all_notify_targets)}   > {all_notify_targets}")
+        # print("FROM UPDATE THREAD >>", end="")
+        # print(f"type of {type(all_jobs)}   > {all_jobs}")
+        # print(f"type of {type(all_notify_targets)}   > {all_notify_targets}")
         for group_key in all_notify_targets:
             print("sending to the group ", group_key)
             session_id = json.loads(all_notify_targets[group_key])["session_id"]

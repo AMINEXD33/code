@@ -13,5 +13,6 @@ urlpatterns = [
     path("getallsessionsstudents/", views.get_all_active_sessions_student),
     path("renamesession/", views.change_session_name),
     path("deletesession/", views.delete_session),
-    path("getsessionusers/", views.get_session_users)
+    path("getsessionusers/", views.get_session_users),
+    path("redirecttopage/", views.redirect_to_page)
 ]

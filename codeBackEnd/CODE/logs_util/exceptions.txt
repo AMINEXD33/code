@@ -67,3 +67,10 @@
 [[92m2024-09-04 22:44:41[0m]([93mviews.py[0m):[91m get_session_usersname 'connection' is not defined[0m
 [[92m2024-09-04 22:44:41[0m]([93mviews.py[0m):[91m get_session_usersname 'connection' is not defined[0m
 [[92m2024-09-05 00:23:24[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m
+[[92m2024-09-09 12:53:48[0m]([93mviews.py[0m):[91m get_session_users'JWT'[0m
+[[92m2024-09-09 12:53:48[0m]([93mviews.py[0m):[91m get_session_users'JWT'[0m
+[[92m2024-09-09 12:53:57[0m]([93mviews.py[0m):[91m get_session_users'JWT'[0m
+[[92m2024-09-09 12:53:57[0m]([93mviews.py[0m):[91m get_session_users'JWT'[0m
+[[92m2024-09-09 13:18:42[0m]([93mviews.py[0m):[91m redirect_to_pagename 'redirect' is not defined[0m
+[[92m2024-09-09 13:18:42[0m]([93mviews.py[0m):[91m redirect_to_pagename 'redirect' is not defined[0m
+[[92m2024-09-09 13:34:25[0m]([93mconsumers.py[0m):[91m def load_from_hard_records, can't get hard record , creating empty soft records[0m

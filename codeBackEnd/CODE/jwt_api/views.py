@@ -394,6 +394,7 @@ def login(request):
     return JsonResponse({"err": "can't provide you with a token"})
 
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def refresh(request):
@@ -997,3 +998,21 @@ def get_session_users(request):
         s.log_exception("get_session_users" + str(e))
         return HttpResponseServerError("can't delete the session")
     return JsonResponse(users, safe=False)
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def redirect_to_page(request):
+    s = LogCore("views.py", False)
+    try:
+        body:dict = get_body_from_request(request)
+        isadmin = allow_(body["JWT"], authority="admin")
+        isuser = allow_(body["JWT"], authority="user")
+
+        if isadmin:
+            return JsonResponse({"dash":1})
+        elif isuser:
+            return JsonResponse({"dash":2})
+    except Exception as e:
+        s.log_exception("redirect_to_page" + str(e))
+        return HttpResponseServerError("can't delete the session")
+    return JsonResponse({"dash":0})
